@@ -1,0 +1,63 @@
+Watching for file changes with StatReloader
+[26/Jun/2025 23:41:05] "GET /admin/ HTTP/1.1" 302 0
+Not Found: /api/
+[26/Jun/2025 23:41:10] "GET /api/ HTTP/1.1" 404 3315
+/Users/zili/Apps/emsi-skills-share/backend/venv/lib/python3.9/site-packages/rest_framework/pagination.py:200: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'accounts.models.City'> QuerySet.
+  paginator = self.django_paginator_class(queryset, page_size)
+[26/Jun/2025 23:41:26] "GET /api/auth/cities/ HTTP/1.1" 200 752
+[26/Jun/2025 23:41:32] "GET /api/auth/cities/ HTTP/1.1" 200 752
+Unauthorized: /api/projects/categories/
+[26/Jun/2025 23:41:44] "GET /api/projects/categories/ HTTP/1.1" 401 58
+Unauthorized: /api/projects/categories/
+[26/Jun/2025 23:41:48] "GET /api/projects/categories/ HTTP/1.1" 401 58
+[26/Jun/2025 23:42:25] "POST /api/auth/login/ HTTP/1.1" 200 1172
+[26/Jun/2025 23:43:34] "GET /api/auth/cities HTTP/1.1" 301 0
+[26/Jun/2025 23:43:34] "GET /api/auth/cities/ HTTP/1.1" 200 9263
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3385
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3597
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1719
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/jquery-3.5.1.min.js HTTP/1.1" 200 89476
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+[26/Jun/2025 23:43:34] "GET /static/rest_framework/fonts/glyphicons-halflings-regular.woff2 HTTP/1.1" 200 18028
+Not Found: /favicon.ico
+[26/Jun/2025 23:43:34] "GET /favicon.ico HTTP/1.1" 404 3336
+[26/Jun/2025 23:43:50] "GET /health HTTP/1.1" 301 0
+[26/Jun/2025 23:43:50] "GET /health/ HTTP/1.1" 200 102
+Not Found: /favicon.ico
+[26/Jun/2025 23:43:50] "GET /favicon.ico HTTP/1.1" 404 3336
+[26/Jun/2025 23:47:04] "GET /health/ HTTP/1.1" 200 102
+Not Found: /favicon.ico
+[26/Jun/2025 23:47:04] "GET /favicon.ico HTTP/1.1" 404 3336
+[26/Jun/2025 23:47:11] "GET /api/auth/cities/ HTTP/1.1" 200 9263
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/css/prettify.css HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/csrf.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/css/default.css HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/jquery-3.5.1.min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/js/default.js HTTP/1.1" 304 0
+[26/Jun/2025 23:47:11] "GET /static/rest_framework/img/grid.png HTTP/1.1" 304 0
+[26/Jun/2025 23:47:12] "GET /api/auth/cities/ HTTP/1.1" 200 9263
+[26/Jun/2025 23:49:02] "GET /api/auth/cities/ HTTP/1.1" 200 752
+[26/Jun/2025 23:49:35] "GET /api/auth/cities/ HTTP/1.1" 200 9263
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/css/prettify.css HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/jquery-3.5.1.min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/css/default.css HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/default.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/js/csrf.js HTTP/1.1" 304 0
+[26/Jun/2025 23:49:35] "GET /static/rest_framework/img/grid.png HTTP/1.1" 304 0
+[26/Jun/2025 23:49:36] "GET /api/auth/cities/ HTTP/1.1" 200 9263
