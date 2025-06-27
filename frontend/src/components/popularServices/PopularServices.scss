@@ -1,0 +1,60 @@
+.popular-services {
+  padding: 60px 0 40px 0;
+  background: #fff;
+  h2 {
+    font-size: 54px;
+    font-weight: 400;
+    color: #444;
+    margin-bottom: 40px;
+    margin-left: 24px;
+  }
+  .services-list {
+    display: flex;
+    gap: 32px;
+    overflow-x: auto;
+    padding: 0 24px;
+  }
+  .service-card {
+    background: #124f31;
+    border-radius: 28px;
+    min-width: 260px;
+    max-width: 260px;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.06);
+    padding: 24px 18px 18px 18px;
+    transition: transform 0.18s;
+    cursor: pointer;
+    &:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.10);
+    }
+    .service-title {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      min-height: 56px;
+      display: flex;
+      align-items: flex-start;
+      word-break: break-word;
+    }
+    .service-img {
+      width: 100%;
+      height: 160px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      img {
+        width: 90%;
+        height: 90%;
+        object-fit: contain;
+      }
+    }
+  }
+} 

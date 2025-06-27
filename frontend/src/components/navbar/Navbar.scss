@@ -1,0 +1,165 @@
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #124f31;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  transition: 0.5s all ease;
+
+  .container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 24px;
+
+    .logo {
+      font-size: 34px;
+      font-weight: bold;
+
+      .text {
+      }
+
+      .dot {
+        font-weight: bold;
+        color: #1dbf73;
+      }
+    }
+    .links {
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      font-family: "Montserrat", sans-serif;
+      font-weight: 500;
+      font-size: 18.5px;
+
+      span, .link {
+        position: relative;
+        white-space: nowrap;
+        padding: 0 6px;
+        cursor: pointer;
+      }
+
+      .link {
+        text-decoration: none;
+        color: white;
+        transition: color 0.2s;
+      }
+
+      .link::after, span::after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 100%;
+        height: 3px;
+        background: #1dbf73;
+        border-radius: 2px;
+        transform: scaleX(0);
+        transition: transform 0.2s;
+      }
+
+      .link:hover::after, span:hover::after {
+        transform: scaleX(1);
+      }
+      .link:hover {
+        color: #1dbf73;
+      }
+
+      .user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        position: relative;
+
+        img {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .options {
+          position: absolute;
+          top: 50px;
+          right: 0;
+          padding: 20px;
+          background-color: white;
+          border-radius: 10px;
+          z-index: 999;
+          border: 1px solid lightgrey;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 200px;
+          font-weight: 300;
+          color: #124f31;
+          a {
+            color: #124f31 !important;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+          }
+          a:hover {
+            color: #1dbf73 !important;
+          }
+        }
+      }
+
+      button {
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 1px solid white;
+        background-color: transparent;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #1dbf73;
+          border-color: #1dbf73;
+        }
+      }
+    }
+  }
+
+  hr {
+    width: 100%;
+    height: 0;
+    border: none;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.2);
+    margin: 0;
+  }
+
+  .menu {
+    width: 100%;
+    padding: 10px 0px;
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-weight: 300;
+    font-family: "Montserrat", sans-serif;
+    background-color: #124f31;
+
+    .menuLink {
+      margin: 0 20px;
+      color: white;
+      text-decoration: none;
+      position: relative;
+      font-size: 14px;
+      border-radius: 6px;
+      padding: 6px 18px;
+      transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+
+      &:hover {
+        color: #1dbf73;
+      }
+    }
+  }
+}
