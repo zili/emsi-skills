@@ -191,6 +191,45 @@
               transform: translateY(-3px) scale(1.05);
               box-shadow: 0 8px 25px rgba(17, 143, 86, 0.4);
             }
+            
+            &:disabled {
+              background: #ccc;
+              cursor: not-allowed;
+              transform: none;
+              box-shadow: none;
+            }
+          }
+
+          .candidature-status {
+            margin-top: 1.5rem;
+            
+            .status-badge {
+              display: inline-block;
+              padding: 0.8rem 1.5rem;
+              border-radius: 20px;
+              font-weight: 600;
+              font-size: 1rem;
+              
+                              &.status-pending {
+                  background: #e3f2fd;
+                  color: #1976d2;
+                }
+              
+              &.status-accepted {
+                background: #00b894;
+                color: white;
+              }
+              
+              &.status-rejected {
+                background: #e17055;
+                color: white;
+              }
+              
+              &.status-withdrawn {
+                background: #636e72;
+                color: white;
+              }
+            }
           }
         }
       }
@@ -381,4 +420,161 @@
       }
     }
   }
-} 
+}
+
+// Notifications Toast modernes
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 320px;
+  max-width: 500px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .toast-message {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+  }
+  
+  .toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    margin-left: 12px;
+    transition: background 0.2s ease;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  // Types de notifications
+  &.success {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .toast-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+  
+  &.error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .toast-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+  
+  &.warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .toast-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+  
+  &.info {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    .toast-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+}
+
+// Animation d'entrée
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Animation de sortie
+.toast-notification.fade-out {
+  animation: slideOutRight 0.3s ease-in-out forwards;
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+// Responsive pour mobile
+@media (max-width: 768px) {
+  .toast-notification {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    min-width: auto;
+    max-width: none;
+    width: calc(100% - 20px);
+    animation: slideInDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  @keyframes slideInDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+ 

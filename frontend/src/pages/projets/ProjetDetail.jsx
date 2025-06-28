@@ -8,6 +8,30 @@ const ProjetDetail = () => {
   const [projet, setProjet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // États pour la candidature
+  const [candidatureStatus, setCandidatureStatus] = useState(null);
+  const [candidatureLoading, setCandidatureLoading] = useState(false);
+
+  // État pour les notifications
+  const [notification, setNotification] = useState(null);
+
+  // Fonction pour afficher une notification
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
+
+  // Vérifier le token d'authentification
+  const getAuthToken = () => {
+    return localStorage.getItem('access_token');
+  };
+
+  const isAuthenticated = () => {
+    return !!getAuthToken();
+  };
 
   // Fonction pour récupérer les détails du projet depuis l'API
   const fetchProjetDetail = async () => {
@@ -26,46 +50,6 @@ const ProjetDetail = () => {
       
       const data = await response.json();
       console.log('Détails du projet reçus:', data);
-      console.log('required_skills dans data:', data.required_skills);
-      console.log('tags dans data:', data.tags);
-      
-      // Debug des compétences
-      console.log('=== DEBUG COMPÉTENCES ===');
-      console.log('data.tags:', data.tags);
-      console.log('data.required_skills:', data.required_skills);
-      console.log('data.skills:', data.skills);
-      console.log('data.required_skills_list:', data.required_skills_list);
-      
-      // Extraire les compétences de différentes sources possibles
-      let competences = [];
-      
-      // Priorité 1: tags avec noms
-      if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
-        competences = data.tags.map(tag => tag.name || tag);
-        console.log('Compétences depuis tags:', competences);
-      }
-      // Priorité 2: required_skills_list
-      else if (data.required_skills_list && Array.isArray(data.required_skills_list) && data.required_skills_list.length > 0) {
-        competences = data.required_skills_list;
-        console.log('Compétences depuis required_skills_list:', competences);
-      }
-      // Priorité 3: required_skills string à splitter
-      else if (data.required_skills && typeof data.required_skills === 'string' && data.required_skills.trim()) {
-        competences = data.required_skills.split(',').map(s => s.trim()).filter(s => s);
-        console.log('Compétences depuis required_skills string:', competences);
-      }
-      // Priorité 4: skills (alias)
-      else if (data.skills && typeof data.skills === 'string' && data.skills.trim()) {
-        competences = data.skills.split(',').map(s => s.trim()).filter(s => s);
-        console.log('Compétences depuis skills:', competences);
-      }
-      // Fallback: compétences par défaut
-      else {
-        competences = ['Compétences à définir'];
-        console.log('Aucune compétence trouvée, fallback utilisé');
-      }
-      
-      console.log('Compétences finales:', competences);
       
       // Transformer les données backend vers le format frontend
       const transformedProjet = {
@@ -73,7 +57,6 @@ const ProjetDetail = () => {
         nom: data.title,
         categorie: data.category?.name || 'Autres',
         image: data.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-        
         tags: data.required_skills ? data.required_skills.split(',').map(s => s.trim()) : ['Marketing digital', 'Réseaux sociaux', 'Communication'],
         description: data.description,
         client: data.client?.full_name || data.client?.email || 'Client anonyme',
@@ -87,14 +70,112 @@ const ProjetDetail = () => {
         })) || []
       };
       
-      console.log('Tags finaux:', transformedProjet.tags);
       setProjet(transformedProjet);
+      
+      // Vérifier le statut de candidature si l'utilisateur est connecté
+      if (isAuthenticated()) {
+        await checkCandidatureStatus();
+      }
       
     } catch (err) {
       console.error('Erreur lors du chargement du projet:', err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Vérifier si l'utilisateur a déjà candidaté
+  const checkCandidatureStatus = async () => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`http://localhost:8000/api/candidatures/check/${id}/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCandidatureStatus(data);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la vérification du statut de candidature:', err);
+    }
+  };
+
+  // Candidature simple en un clic
+  const handleCandidatureClick = async () => {
+    if (!isAuthenticated()) {
+      showNotification('Vous devez être connecté pour candidater', 'warning');
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+    
+    if (candidatureStatus?.has_applied) {
+      return; // Déjà candidaté
+    }
+    
+    setCandidatureLoading(true);
+    
+    try {
+      const token = getAuthToken();
+      console.log('Token utilisé:', token ? 'Token présent' : 'Pas de token');
+      
+      const response = await fetch('http://localhost:8000/api/candidatures/create/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project: parseInt(id),
+          cover_letter: 'Je suis intéressé(e) par ce projet et souhaite y contribuer.',
+          availability: 'Disponible immédiatement',
+          proposed_timeline: projet?.duree || 'À discuter',
+          proposed_budget: 'À négocier'
+        }),
+      });
+      
+      console.log('Réponse API:', response.status, response.statusText);
+      
+      // Gestion spécifique des erreurs d'authentification
+      if (response.status === 401) {
+        // Token expiré ou invalide
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        showNotification('Votre session a expiré. Redirection...', 'error');
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Données de réponse:', data);
+      
+      if (response.ok) {
+        showNotification('Candidature envoyée avec succès !', 'success');
+        await checkCandidatureStatus(); // Rafraîchir le statut
+      } else {
+        // Afficher l'erreur spécifique du serveur
+        const errorMessage = data.error || data.message || data.detail || 'Erreur inconnue';
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la candidature:', err);
+      
+      if (err.message.includes('déjà candidaté')) {
+        showNotification('Vous avez déjà candidaté pour ce projet !', 'warning');
+      } else if (err.message.includes('session') || err.message.includes('authentication')) {
+        showNotification('Problème d\'authentification. Redirection...', 'error');
+        setTimeout(() => navigate('/login'), 2000);
+      } else if (err.message.includes('Failed to fetch')) {
+        showNotification('Erreur de connexion. Vérifiez que le serveur est démarré.', 'error');
+      } else {
+        showNotification(`Erreur: ${err.message}`, 'error');
+      }
+    } finally {
+      setCandidatureLoading(false);
     }
   };
 
@@ -105,19 +186,19 @@ const ProjetDetail = () => {
     }
   }, [id]);
 
-  // État de chargement
+  // États de chargement et d'erreur
   if (loading) {
-  return (
+    return (
       <div className="project-detail-view">
         <div className="project-detail-header">
           <div className="project-header-container">
             <button className="back-btn" onClick={() => navigate(-1)}>
               ← Retour
-        </button>
+            </button>
             <div className="project-main-content">
               <div className="project-image-section">
                 <div className="project-main-image" style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  🔄 Chargement...
+                  Chargement...
                 </div>
               </div>
               <div className="project-info-section">
@@ -131,7 +212,6 @@ const ProjetDetail = () => {
     );
   }
 
-  // État d'erreur
   if (error) {
     return (
       <div className="project-detail-view">
@@ -151,7 +231,7 @@ const ProjetDetail = () => {
                   margin: '20px 0',
                   color: '#721c24'
                 }}>
-                  ❌ {error}
+                  {error}
                 </div>
                 <button 
                   onClick={fetchProjetDetail}
@@ -174,7 +254,6 @@ const ProjetDetail = () => {
     );
   }
 
-  // Projet introuvable
   if (!projet) {
     return (
       <div style={{ padding: 40 }}>
@@ -189,6 +268,26 @@ const ProjetDetail = () => {
 
   return (
     <div className="project-detail-view">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`toast-notification ${notification.type}`}>
+          <div className="toast-content">
+            <div className="toast-icon">
+              {notification.type === 'success' && '✓'}
+              {notification.type === 'error' && '✗'}
+              {notification.type === 'warning' && '⚠'}
+            </div>
+            <span className="toast-message">{notification.message}</span>
+          </div>
+          <button 
+            className="toast-close"
+            onClick={() => setNotification(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Header vert style portfolio */}
       <div className="project-detail-header">
         <div className="project-header-container">
@@ -224,7 +323,6 @@ const ProjetDetail = () => {
                   <span className="meta-label">Durée :</span>
                   <span className="meta-value">{projet.duree}</span>
                 </div>
-
               </div>
               
               <div className="project-competences">
@@ -242,20 +340,37 @@ const ProjetDetail = () => {
                 </div>
               </div>
              
-              <button className="candidater-btn">
-                CANDIDATER POUR CE PROJET
-              </button>
+              {/* Bouton candidater simple */}
+              {candidatureStatus?.has_applied ? (
+                <div className="candidature-status">
+                  <div className={`status-badge status-${candidatureStatus.status}`}>
+                    Candidature {candidatureStatus.status_display}
+                  </div>
+                  <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '8px' }}>
+                    Candidature soumise le {new Date(candidatureStatus.applied_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+              ) : (
+                <button 
+                  className="candidater-btn"
+                  onClick={handleCandidatureClick}
+                  disabled={candidatureLoading}
+                >
+                  {candidatureLoading ? 'Envoi en cours...' : 'CANDIDATER POUR CE PROJET'}
+                </button>
+              )}
               
-              {/* Indicateur que les données viennent du backend */}
+              {/* Indicateur de connexion au backend */}
               <div style={{ 
                 marginTop: '20px', 
                 fontSize: '0.9rem', 
                 color: '#666',
-                background: '#e6f4ee',
+                background: '#f8f9fa',
                 padding: '8px 12px',
-                borderRadius: '6px'
+                borderRadius: '6px',
+                border: '1px solid #e9ecef'
               }}>
-                ✅ Données chargées depuis le backend (ID: {projet.id})
+                Connecté au serveur - Projet #{projet.id}
               </div>
             </div>
           </div>
