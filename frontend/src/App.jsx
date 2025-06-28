@@ -273,7 +273,7 @@ function App() {
           element: (
             <ProtectedRoute requireAdmin={true}>
               <Suspense fallback={<div>Chargement...</div>}>
-                <AdminProjetDetail />
+              <AdminProjetDetail />
               </Suspense>
             </ProtectedRoute>
           ),

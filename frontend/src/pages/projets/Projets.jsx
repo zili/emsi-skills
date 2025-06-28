@@ -263,7 +263,7 @@ const Projets = () => {
             🔄 Chargement des projets...
           </div>
         ) : (
-          <div className="projets-grid">
+        <div className="projets-grid">
             {filteredProjets.length === 0 ? (
               <div style={{
                 textAlign: 'center', 
@@ -275,24 +275,24 @@ const Projets = () => {
               </div>
             ) : (
               filteredProjets.map((p) => (
-                <div className="projet-card" key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
-                  <div className="projet-card-img" style={{backgroundImage: `url(${p.image})`}}>
-                    <div className="projet-card-genre-badge">{p.categorie}</div>
-                  </div>
-                  <div className="projet-card-content">
-                    <h3 className="projet-card-title">{p.nom}</h3>
-                    <div className="projet-card-client">{p.client}</div>
-                    <div className="projet-card-date">{p.date}</div>
-                    <div className="projet-card-tags">
-                      {p.tags.map((tag) => (
-                        <span className="tag" key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
+            <div className="projet-card" key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
+              <div className="projet-card-img" style={{backgroundImage: `url(${p.image})`}}>
+                <div className="projet-card-genre-badge">{p.categorie}</div>
+              </div>
+              <div className="projet-card-content">
+                <h3 className="projet-card-title">{p.nom}</h3>
+                <div className="projet-card-client">{p.client}</div>
+                <div className="projet-card-date">{p.date}</div>
+                <div className="projet-card-tags">
+                  {p.tags.map((tag) => (
+                    <span className="tag" key={tag}>{tag}</span>
+                  ))}
                 </div>
+              </div>
+            </div>
               ))
             )}
-          </div>
+        </div>
         )}
       </div>
     </div>

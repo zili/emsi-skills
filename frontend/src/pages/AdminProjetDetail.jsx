@@ -55,7 +55,7 @@ const AdminProjetDetail = () => {
         nom: data.title,
         categorie: data.category?.name || 'Non catégorisé',
         image: data.main_image || data.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-        technologie: data.technology_used || 'Non spécifié',
+        
         tags: data.tags || [],
         description: data.description || 'Description non disponible',
         client: data.client?.full_name || `${data.client?.first_name} ${data.client?.last_name}` || 'Client anonyme',
@@ -276,12 +276,7 @@ const AdminProjetDetail = () => {
                     {projet.statut}
                   </span>
                 </div>
-                {projet.technologie && (
-                  <div className="meta-item">
-                    <span className="meta-label">TECHNOLOGIE :</span>
-                    <span className="meta-value">{projet.technologie}</span>
-                  </div>
-                )}
+
                 {projet.budget_range && (
                   <div className="meta-item">
                     <span className="meta-label">BUDGET :</span>

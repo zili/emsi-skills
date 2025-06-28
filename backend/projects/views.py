@@ -239,7 +239,7 @@ def simple_project_detail(request, pk):
         # Récupérer le projet directement sans utiliser les relations
         project = Project.objects.filter(id=pk).values(
             'id', 'title', 'description', 'estimated_duration',
-            'required_skills', 'created_at', 'technology_used'
+            'required_skills', 'created_at'
         ).first()
         
         if not project:
@@ -260,7 +260,7 @@ def simple_project_detail(request, pk):
             'display_duration': project['estimated_duration'] or '2 mois',
             'required_skills': project['required_skills'] or 'React.js, Django, Python',
             'required_skills_list': (project['required_skills'] or 'React.js, Django, Python').split(','),
-            'technology_used': project['technology_used'] or 'Technologies modernes',
+            
             'created_at': project['created_at'],
             'display_date': project['created_at'].strftime('%d/%m/%Y') if project['created_at'] else '01/01/2024',
             'tags': [
@@ -290,7 +290,7 @@ def simple_project_detail(request, pk):
             'display_duration': '1 mois',
             'required_skills': 'React.js, Django, Test',
             'required_skills_list': ['React.js', 'Django', 'Test'],
-            'technology_used': 'Technologies de test',
+            
             'created_at': '2024-06-28T20:00:00Z',
             'display_date': '28/06/2024',
             'tags': [

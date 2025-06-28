@@ -63,7 +63,6 @@ class Project(models.Model):
     # Project Details
     estimated_duration = models.CharField(max_length=100, blank=True)
     required_skills = models.TextField(blank=True, help_text="Compétences requises séparées par des virgules")
-    technology_used = models.CharField(max_length=200, blank=True)
     
     # Status and Admin
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')

@@ -73,7 +73,7 @@ const ProjetDetail = () => {
         nom: data.title,
         categorie: data.category?.name || 'Autres',
         image: data.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-        technologie: data.technology_used || 'Non spécifiée',
+        
         tags: data.required_skills ? data.required_skills.split(',').map(s => s.trim()) : ['Marketing digital', 'Réseaux sociaux', 'Communication'],
         description: data.description,
         client: data.client?.full_name || data.client?.email || 'Client anonyme',
@@ -224,12 +224,7 @@ const ProjetDetail = () => {
                   <span className="meta-label">Durée :</span>
                   <span className="meta-value">{projet.duree}</span>
                 </div>
-                {projet.technologie && projet.technologie !== 'Non spécifiée' && (
-                  <div className="meta-item">
-                    <span className="meta-label">Technologie :</span>
-                    <span className="meta-value">{projet.technologie}</span>
-                  </div>
-                )}
+
               </div>
               
               <div className="project-competences">
