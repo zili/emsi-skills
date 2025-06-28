@@ -4,8 +4,8 @@ import "./AdminSidebar.scss";
 
 const links = [
   { to: "/admin", label: "Dashboard" },
-  { to: "/adminprojet", label: "Projets" },
-  { to: "/admincomptes", label: "Comptes" },
+  { to: "/", label: "Projets" },
+  { to: "/", label: "Utilisateurs" },
   { to: "/admindemandes", label: "Demandes" },
   { to: "/admin/gestion-comptes", label: "Gestion des comptes" },
 ];

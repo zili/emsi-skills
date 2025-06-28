@@ -1,0 +1,48 @@
+.admin-layout-pro {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-main-pro {
+  flex: 1;
+}
+
+.admin-content-pro {
+  padding: 20px;
+}
+
+.admin-content-pro h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.demandes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.demande-card {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.demande-card h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.demande-card p {
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.demande-card span {
+  background: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+} 

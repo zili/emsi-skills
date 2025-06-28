@@ -1,8 +1,10 @@
 import "./app.scss";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-router-dom";
 import React from "react";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
+import AuthRedirect from "./components/AuthRedirect";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/home/Home";
 import Gigs from "./pages/gigs/Gigs";
 import Gig from "./pages/gig/Gig";
@@ -14,6 +16,7 @@ import Messages from "./pages/messages/Messages";
 import Message from "./pages/message/Message";
 import Favorites from "./pages/favorites/Favorites";
 import Portfolio from "./pages/Portfolio";
+import PortfolioView from "./pages/PortfolioView";
 import ProjetRealise from "./pages/ProjetRealise";
 import MyGigs from "./pages/myGigs/MyGigs";
 import Candidature from "./pages/Candidature";
@@ -25,6 +28,12 @@ import AdminProjet from "./pages/AdminProjet";
 import AdminComptes from "./pages/AdminComptes";
 import AdminDemandes from "./pages/AdminDemandes";
 import AdminGestionComptes from "./pages/AdminGestionComptes";
+// Import dynamique pour éviter les problèmes de cache
+import { lazy, Suspense } from 'react';
+const AdminProjetDetail = lazy(() => import("./pages/AdminProjetDetail"));
+import AccueilStaffClub from "./pages/AccueilStaffClub";
+import Demandes from "./pages/Demandes";
+import Profil from "./pages/Profil";
 
 function App() {
   const Layout = () => {
@@ -44,43 +53,111 @@ function App() {
       children: [
         {
           path: "/",
-          element: <Home />,
+          element: <Navigate to="/accueil-student" replace />,
+        },
+        {
+          path: "/accueil-student",
+          element: (
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/accueil-staff-club",
+          element: (
+            <ProtectedRoute>
+              <AccueilStaffClub />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/gigs",
-          element: <Gigs />,
+          element: (
+            <ProtectedRoute>
+              <Gigs />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/orders",
-          element: <Orders />,
+          element: (
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/messages",
-          element: <Messages />,
+          element: (
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/message/:id",
-          element: <Message />,
+          element: (
+            <ProtectedRoute>
+              <Message />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/add",
-          element: <Add />,
+          element: (
+            <ProtectedRoute>
+              <Add />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/add-project",
+          element: (
+            <ProtectedRoute>
+              <Add />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/gig/:id",
-          element: <Gig />,
+          element: (
+            <ProtectedRoute>
+              <Gig />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/favoris",
-          element: <Favorites />,
+          element: (
+            <ProtectedRoute>
+              <Favorites />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/portfolio",
-          element: <Portfolio />,
+          element: (
+            <ProtectedRoute>
+              <Portfolio />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/portfolio-view",
+          element: (
+            <ProtectedRoute>
+              <PortfolioView />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/mygigs",
-          element: <MyGigs />,
+          element: (
+            <ProtectedRoute>
+              <MyGigs />
+            </ProtectedRoute>
+          ),
           children: [
             { path: "projetrealise", element: <ProjetRealise /> },
             { path: "candidature", element: <Candidature /> },
@@ -89,57 +166,135 @@ function App() {
         },
         {
           path: "/candidature",
-          element: <Candidature />,
+          element: (
+            <ProtectedRoute>
+              <Candidature />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/projetrealise",
-          element: <ProjetRealise />,
+          element: (
+            <ProtectedRoute>
+              <ProjetRealise />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/projets",
-          element: <Projets />,
+          element: (
+            <ProtectedRoute>
+              <Projets />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/projets/:id",
-          element: <ProjetDetail />,
+          element: (
+            <ProtectedRoute>
+              <ProjetDetail />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/demandes",
+          element: (
+            <ProtectedRoute>
+              <Demandes />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/profil",
+          element: (
+            <ProtectedRoute>
+              <Profil />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/admin",
-          element: <QueDashboard />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <QueDashboard />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/dashboard", 
-          element: <MyGigs />,
+          element: (
+            <ProtectedRoute>
+              <MyGigs />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/admin-dashboard",
-          element: <QueDashboard />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <QueDashboard />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/adminprojet",
-          element: <AdminProjet />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <AdminProjet />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/admincomptes",
-          element: <AdminComptes />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <AdminComptes />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/admindemandes",
-          element: <AdminDemandes />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <AdminDemandes />
+            </ProtectedRoute>
+          ),
         },
         {
           path: "/admin/gestion-comptes",
-          element: <AdminGestionComptes />,
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <AdminGestionComptes />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/admin/projet/:id",
+          element: (
+            <ProtectedRoute requireAdmin={true}>
+              <Suspense fallback={<div>Chargement...</div>}>
+                <AdminProjetDetail />
+              </Suspense>
+            </ProtectedRoute>
+          ),
         },
       ],
     },
     {
       path: "/register",
-      element: <Register />,
+      element: (
+        <AuthRedirect>
+          <Register />
+        </AuthRedirect>
+      ),
     },
     {
       path: "/login",
-      element: <Login />,
+      element: (
+        <AuthRedirect>
+          <Login />
+        </AuthRedirect>
+      ),
     },
   ]);
 

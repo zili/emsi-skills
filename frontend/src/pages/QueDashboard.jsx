@@ -29,17 +29,17 @@ const recentActivity = [
   { type: "Projet refusé", user: "Omar Benali", date: "08/06/2024" },
 ];
 const recentLogins = [
-  { photo: "/img/man.png", nom: "Zilili", prenom: "Yassine", filiere: "Informatique", ville: "Tanger", date: "2024-06-10", heure: "09:12" },
-  { photo: "/img/woman.png", nom: "El Amrani", prenom: "Fatima", filiere: "Génie Civil", ville: "Casablanca", date: "2024-06-10", heure: "08:47" },
-  { photo: "/img/man.png", nom: "Benali", prenom: "Omar", filiere: "Industriel", ville: "Rabat", date: "2024-06-09", heure: "18:22" },
-  { photo: "/img/woman.png", nom: "Khalil", prenom: "Sara", filiere: "Informatique", ville: "Marrakech", date: "2024-06-09", heure: "17:05" },
+  { photo: "/img/man.png", nom: "Zilili", prenom: "Yassine", filiere: "Informatique", date: "2024-06-10", heure: "09:12" },
+  { photo: "/img/woman.png", nom: "El Amrani", prenom: "Fatima", filiere: "Génie Civil", date: "2024-06-10", heure: "08:47" },
+  { photo: "/img/man.png", nom: "Benali", prenom: "Omar", filiere: "Industriel", date: "2024-06-09", heure: "18:22" },
+  { photo: "/img/woman.png", nom: "Khalil", prenom: "Sara", filiere: "Informatique", date: "2024-06-09", heure: "17:05" },
 ];
 const villesData = [
-  { name: "Tanger", value: 38, color: "#28a83e" },
-  { name: "Fès", value: 22, color: "#178f56" },
-  { name: "Casablanca", value: 19, color: "#32c94b" },
-  { name: "Marrakech", value: 13, color: "#1dbf73" },
-  { name: "Rabat", value: 8, color: "#b0eac7" },
+  { name: "AP", value: 38, color: "#28a83e" },
+  { name: "IIR", value: 22, color: "#178f56" },
+  { name: "GC", value: 19, color: "#32c94b" },
+  { name: "GF", value: 13, color: "#1dbf73" },
+  { name: "GI", value: 8, color: "#b0eac7" },
 ];
 
 const AdminHeader = ({periode, setPeriode}) => (
@@ -97,7 +97,7 @@ const QueDashboard = () => {
             </ResponsiveContainer>
           </div>
           <div className="chart-card villes-card">
-            <div className="chart-title">Villes les plus actives</div>
+            <div className="chart-title">Filières les plus actives</div>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie data={villesData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} startAngle={90} endAngle={-270}>
@@ -128,7 +128,6 @@ const QueDashboard = () => {
                   <th>Nom</th>
                   <th>Prénom</th>
                   <th>Filière</th>
-                  <th>Ville</th>
                   <th>Date</th>
                   <th>Heure</th>
                 </tr>
@@ -140,7 +139,6 @@ const QueDashboard = () => {
                     <td>{u.nom}</td>
                     <td>{u.prenom}</td>
                     <td>{u.filiere}</td>
-                    <td>{u.ville}</td>
                     <td>{u.date}</td>
                     <td>{u.heure}</td>
                   </tr>

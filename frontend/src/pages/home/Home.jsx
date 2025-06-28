@@ -23,7 +23,7 @@ function Home() {
 
         // Charger les catégories (si l'endpoint existe)
         try {
-          const categoriesResponse = await fetch('http://localhost:8000/api/categories/');
+          const categoriesResponse = await fetch('http://localhost:8000/api/projects/categories/');
           if (categoriesResponse.ok) {
             const categoriesData = await categoriesResponse.json();
             setCategories(categoriesData.results || categoriesData || []);
@@ -222,10 +222,10 @@ function Home() {
           {projects.map((project) => (
             <ProjectCard key={project.id} card={{
               id: project.id,
-              img: project.image || "https://images.pexels.com/photos/1462935/pexels-photo-1462935.jpeg?auto=compress&cs=tinysrgb&w=1600",
-              pp: project.owner?.profile_picture || "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1600",
+              img: project.images?.[0]?.image || "https://images.pexels.com/photos/1462935/pexels-photo-1462935.jpeg?auto=compress&cs=tinysrgb&w=1600",
+              pp: project.client?.profile_picture || "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1600",
               cat: project.category?.name || "Développement",
-              username: project.owner?.username || "Utilisateur EMSI"
+              username: project.client?.username || "Utilisateur EMSI"
             }} />
           ))}
         </Slide>

@@ -15,9 +15,15 @@ class Candidature(models.Model):
     
     # Application details
     cover_letter = models.TextField(help_text="Lettre de motivation")
+    motivation_message = models.TextField(blank=True)  # alias pour cover_letter
     proposed_timeline = models.CharField(max_length=100, blank=True)
     proposed_budget = models.CharField(max_length=100, blank=True)
     availability = models.CharField(max_length=200, help_text="Disponibilité du candidat")
+    
+    # Frontend compatibility
+    display_name = models.CharField(max_length=100, blank=True)  # "Ahmed Benali"
+    candidate_photo = models.ImageField(upload_to='candidate_photos/', blank=True, null=True)
+    formatted_date = models.CharField(max_length=20, blank=True)  # "2024-01-16"
     
     # Status and dates
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -39,6 +45,15 @@ class Candidature(models.Model):
     
     def __str__(self):
         return f"{self.candidate.full_name} - {self.project.title}"
+    
+    def save(self, *args, **kwargs):
+        if not self.display_name:
+            self.display_name = self.candidate.full_name
+        if not self.formatted_date:
+            self.formatted_date = self.applied_at.strftime("%d/%m/%Y") if self.applied_at else ""
+        if not self.motivation_message:
+            self.motivation_message = self.cover_letter
+        super().save(*args, **kwargs)
     
     @property
     def is_pending(self):

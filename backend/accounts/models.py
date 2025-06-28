@@ -36,6 +36,15 @@ class User(AbstractUser):
     total_projects = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Portfolio/CV
+    cv_file = models.FileField(upload_to='cv_files/', blank=True, null=True)
+    languages = models.TextField(blank=True)  # "Français, Anglais"
+    
+    # Stats pour dashboard
+    projects_created_count = models.IntegerField(default=0)
+    candidatures_received_count = models.IntegerField(default=0)
+    success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

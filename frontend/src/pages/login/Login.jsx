@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { redirectUserAfterAuth } from "../../utils/userRedirection";
 import "./Login.scss";
 
 const Login = () => {
@@ -60,12 +61,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!ville || !email || !password) {
-      setError("Veuillez remplir tous les champs.");
+    if (!email || !password) {
+      setError("Veuillez remplir l'email et le mot de passe.");
       return;
     }
-    if (!email.endsWith("@emsi.ma") && !email.endsWith("@student.emsi.ma")) {
-      setError("L'adresse mail doit se terminer par @emsi.ma ou @student.emsi.ma");
+    if (!email.endsWith("@emsi.ma") && !email.endsWith("@emsi-edu.ma")) {
+      setError("L'adresse mail doit se terminer par @emsi.ma ou @emsi-edu.ma");
       return;
     }
 
@@ -77,7 +78,7 @@ const Login = () => {
       console.log('📧 Email:', email);
       console.log('🏙️ Ville:', ville);
       
-      const response = await fetch('http://localhost:8000/api/token/', {
+      const response = await fetch('http://localhost:8000/api/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,14 +96,52 @@ const Login = () => {
 
       if (response.ok) {
         console.log('✅ Connexion réussie!');
+        console.log('📊 Données utilisateur reçues:', data.user);
+        
         // Stocker les tokens
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         localStorage.setItem('user_data', JSON.stringify(data.user));
         
-        // Redirection vers l'accueil après connexion réussie
-        console.log('✅ Redirection vers l\'accueil');
-        navigate('/');
+        // Déterminer le type d'utilisateur de manière plus robuste
+        let userType = 'student'; // Par défaut
+        
+        // Vérifier admin en premier
+        if (data.user.is_superuser === true) {
+          userType = 'admin';
+        } 
+        // Vérifier staff
+        else if (data.user.is_staff === true) {
+          userType = 'staff';
+        }
+        // Vérifier les champs possibles du backend
+        else if (data.user.user_type) {
+          userType = data.user.user_type.toLowerCase();
+        }
+        else if (data.user.role) {
+          userType = data.user.role.toLowerCase();
+        }
+        else if (data.user.type) {
+          userType = data.user.type.toLowerCase();
+        }
+        // Analyser l'email comme fallback
+        else if (data.user.email) {
+          const email = data.user.email.toLowerCase();
+          if (email.includes('admin')) {
+            userType = 'admin';
+          } else if (email.includes('staff')) {
+            userType = 'staff';
+          } else if (email.includes('club')) {
+            userType = 'club';
+          }
+        }
+        
+        localStorage.setItem('user_type', userType);
+        console.log('👤 Type d\'utilisateur défini:', userType);
+        console.log('📝 Données complètes utilisateur:', data.user);
+        
+        // Redirection basée sur le type d'utilisateur
+        redirectUserAfterAuth(navigate, data.user);
       } else {
         console.error('❌ Erreur de connexion:', data);
         setError(data.message || data.detail || 'Connexion échouée. Vérifiez vos identifiants.');
@@ -133,7 +172,7 @@ const Login = () => {
           type="email" 
           value={email} 
           onChange={e => setEmail(e.target.value)} 
-          placeholder="prenom.nom@emsi.ma" 
+          placeholder="prenom.nom@emsi-edu.ma" 
           required 
           disabled={loading}
         />

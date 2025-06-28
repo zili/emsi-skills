@@ -101,7 +101,7 @@ export const useCities = () => {
 
 // Hook spécialisé pour les catégories
 export const useCategories = () => {
-  return useApi('/categories/');
+  return useApi('/projects/categories/');
 };
 
 // Hook pour les projets publics (sans authentification)
