@@ -26,4 +26,8 @@ urlpatterns = [
     
     # Categories and Tags
     path('categories/', views.CategoryListView.as_view(), name='categories'),
+    
+    # Simple endpoint pour éviter les problèmes de DB
+    path('simple/', views.simple_projects_list, name='simple_projects'),
+    path('simple/<int:pk>/', views.simple_project_detail, name='simple_project_detail'),
 ]

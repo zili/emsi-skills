@@ -15,7 +15,7 @@ const ProjetDetail = () => {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/projects/${id}/`);
+      const response = await fetch(`http://localhost:8000/api/projects/simple/${id}/`);
       
       if (!response.ok) {
         if (response.status === 404) {

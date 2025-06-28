@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Projets.scss";
 import { FaSearch, FaFilter } from "react-icons/fa";
@@ -111,18 +111,76 @@ const categoriesGrid = [
   { name: "Photography", icon: <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" stroke="#116b41" strokeWidth="2"/><circle cx="12" cy="12" r="3" stroke="#1dbf73" strokeWidth="2"/></svg> },
 ];
 
-const annees = [
-  "Toutes les années",
-  ...Array.from(new Set(initialProjets.map((p) => p.date.split("/")[2]))),
-];
-
 const Projets = () => {
   const [categorie, setCategorie] = useState("Tous");
   const [search, setSearch] = useState("");
   const [annee, setAnnee] = useState("Toutes les années");
+  const [projets, setProjets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const filteredProjets = initialProjets.filter((p) =>
+  // Charger les projets depuis l'API
+  useEffect(() => {
+    const fetchProjets = async () => {
+      try {
+        console.log('🔄 Chargement des projets depuis l\'API...');
+        const response = await fetch('http://localhost:8000/api/projects/simple/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('📡 Réponse projets:', response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('📊 Données projets reçues:', data);
+        
+        // Transformer les données pour qu'elles correspondent au format attendu par le frontend
+        const transformedProjets = data.map(projet => ({
+          id: projet.id,
+          nom: projet.title,
+          categorie: projet.category?.name || 'Autre',
+          image: projet.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80',
+          client: projet.client?.full_name || projet.client?.email || 'Client',
+          date: new Date(projet.created_at).toLocaleDateString('fr-FR'),
+          duree: projet.estimated_duration || 'Non définie',
+          tags: projet.tags?.map(tag => tag.name) || [],
+        }));
+
+        setProjets(transformedProjets);
+        console.log('✅ Projets chargés avec succès:', transformedProjets.length);
+        
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des projets:', error);
+        setError('Impossible de charger les projets. Utilisation des données de démonstration.');
+        
+        // Fallback avec les données mockées
+        setProjets(initialProjets.map(p => ({
+          ...p,
+          nom: p.nom || p.title,
+          categorie: p.categorie || p.category,
+        })));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjets();
+  }, []);
+
+  // Calculer les années dynamiquement basées sur les projets chargés
+  const annees = [
+    "Toutes les années",
+    ...Array.from(new Set(projets.map((p) => p.date.split("/")[2]))).sort().reverse(),
+  ];
+
+  const filteredProjets = projets.filter((p) =>
     (categorie === "Tous" || p.categorie === categorie) &&
     (annee === "Toutes les années" || p.date.split("/")[2] === annee) &&
     (p.nom.toLowerCase().includes(search.toLowerCase()) ||
@@ -179,25 +237,63 @@ const Projets = () => {
             </select>
           </div>
         </div>
-        <div className="projets-grid">
-          {filteredProjets.map((p) => (
-            <div className="projet-card" key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
-              <div className="projet-card-img" style={{backgroundImage: `url(${p.image})`}}>
-                <div className="projet-card-genre-badge">{p.categorie}</div>
+        
+        {error && (
+          <div className="error-message" style={{
+            background: '#fff3cd', 
+            border: '1px solid #ffeaa7', 
+            borderRadius: '8px', 
+            padding: '12px', 
+            margin: '20px 0', 
+            color: '#856404'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+        
+        {loading ? (
+          <div className="loading-container" style={{
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '200px',
+            fontSize: '1.1rem',
+            color: '#116b41'
+          }}>
+            🔄 Chargement des projets...
+          </div>
+        ) : (
+          <div className="projets-grid">
+            {filteredProjets.length === 0 ? (
+              <div style={{
+                textAlign: 'center', 
+                padding: '40px', 
+                color: '#666',
+                fontSize: '1.1rem'
+              }}>
+                😔 Aucun projet trouvé pour les critères sélectionnés.
               </div>
-              <div className="projet-card-content">
-                <h3 className="projet-card-title">{p.nom}</h3>
-                <div className="projet-card-client">{p.client}</div>
-                <div className="projet-card-date">{p.date}</div>
-                <div className="projet-card-tags">
-                  {p.tags.map((tag) => (
-                    <span className="tag" key={tag}>{tag}</span>
-                  ))}
+            ) : (
+              filteredProjets.map((p) => (
+                <div className="projet-card" key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
+                  <div className="projet-card-img" style={{backgroundImage: `url(${p.image})`}}>
+                    <div className="projet-card-genre-badge">{p.categorie}</div>
+                  </div>
+                  <div className="projet-card-content">
+                    <h3 className="projet-card-title">{p.nom}</h3>
+                    <div className="projet-card-client">{p.client}</div>
+                    <div className="projet-card-date">{p.date}</div>
+                    <div className="projet-card-tags">
+                      {p.tags.map((tag) => (
+                        <span className="tag" key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
