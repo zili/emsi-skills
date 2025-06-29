@@ -63,7 +63,21 @@ class ApiService {
         const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.message || 'Une erreur est survenue');
+            // Log détaillé de l'erreur pour debug
+            console.error('❌ Erreur API:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url,
+                data: data
+            });
+            
+            // Message d'erreur spécifique selon le statut
+            let errorMessage = data.message || data.detail || 'Une erreur est survenue';
+            if (response.status === 400 && data.errors) {
+                errorMessage = `Erreurs de validation: ${JSON.stringify(data.errors)}`;
+            }
+            
+            throw new Error(errorMessage);
         }
         
         return data;
@@ -134,10 +148,82 @@ class ApiService {
     }
 
     async updateProfile(profileData) {
-        return this.request('/auth/profile/', {
-            method: 'PUT',
-            body: JSON.stringify(profileData),
-        });
+        // Vérifier s'il y a des fichiers (base64) dans les données
+        const hasFiles = profileData.profile_picture?.startsWith('data:') || 
+                         profileData.cv_file?.startsWith('data:');
+        
+        if (hasFiles) {
+            console.log('🔄 Fichiers détectés, utilisation de FormData');
+            
+            // Utiliser FormData pour les fichiers
+            const formData = new FormData();
+            
+            // Ajouter les champs texte et fichiers
+            Object.keys(profileData).forEach(key => {
+                if (key === 'profile_picture' || key === 'cv_file') {
+                    // Traiter les fichiers séparément
+                    if (profileData[key] && profileData[key].startsWith('data:')) {
+                        // Convertir base64 en Blob
+                        const base64Data = profileData[key];
+                        const [header, data] = base64Data.split(',');
+                        const mimeType = header.match(/data:([^;]+)/)[1];
+                        
+                        // Créer un Blob à partir du base64
+                        const byteCharacters = atob(data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: mimeType });
+                        
+                        // Générer un nom de fichier approprié
+                        const extension = mimeType.includes('image') ? 
+                            (mimeType.includes('png') ? '.png' : '.jpg') : 
+                            '.pdf';
+                        const fileName = key === 'profile_picture' ? 
+                            `profile${extension}` : 
+                            `cv${extension}`;
+                        
+                        formData.append(key, blob, fileName);
+                        console.log(`✅ Fichier ${key} ajouté au FormData:`, fileName);
+                    }
+                } else {
+                    // Ajouter les champs texte normalement
+                    formData.append(key, profileData[key]);
+                    console.log(`📝 Champ texte ajouté:`, key, '=', profileData[key]);
+                }
+            });
+            
+            // Utiliser fetch directement pour éviter les problèmes de Content-Type
+            const url = `${this.baseURL}/auth/profile/update/`;
+            console.log('🚀 Envoi FormData à:', url);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`
+                        // Ne pas définir Content-Type - le navigateur le fait automatiquement pour FormData
+                    },
+                    body: formData
+                });
+                
+                console.log('📡 Réponse serveur:', response.status, response.statusText);
+                return this.handleResponse(response);
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'upload:', error);
+                throw error;
+            }
+        } else {
+            console.log('🔄 Pas de fichiers, utilisation de JSON');
+            // Pas de fichiers, utiliser JSON classique
+            return this.request('/auth/profile/update/', {
+                method: 'PATCH',
+                body: JSON.stringify(profileData),
+            });
+        }
     }
 
     async changePassword(passwordData) {

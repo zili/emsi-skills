@@ -245,8 +245,8 @@ const AdminDemandes = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+              </div>
+            ))}
               </div>
             )}
           </div>

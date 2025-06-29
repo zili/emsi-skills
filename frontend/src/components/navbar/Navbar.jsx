@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./Navbar.scss";
+import apiService from "../../services/api";
 
 function Navbar() {
   const [active, setActive] = useState(false);
@@ -22,6 +23,7 @@ function Navbar() {
   // Récupérer les données utilisateur depuis localStorage
   const [currentUser, setCurrentUser] = useState(null);
   const [userType, setUserType] = useState('student');
+  const [profilePicture, setProfilePicture] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -70,6 +72,23 @@ function Navbar() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  // Récupérer la photo de profil depuis l'API pour les étudiants
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (userType === 'student' && currentUser) {
+        try {
+          const profileData = await apiService.getProfile();
+          setProfilePicture(profileData.profile_picture || null);
+        } catch (error) {
+          console.error('Erreur lors de la récupération de la photo de profil:', error);
+          setProfilePicture(null);
+        }
+      }
+    };
+
+    fetchProfilePicture();
+  }, [userType, currentUser]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -197,7 +216,7 @@ function Navbar() {
           {getNavbarLinks()}
             <div className="user" onClick={()=>setOpen(!open)}>
               <img
-                src={userType === 'club' ? "/img/lionss.jpg" : userType === 'admin' ? "/img/admin.png" : (currentUser?.profile_picture || "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600")}
+                src={userType === 'club' ? "/img/lionss.jpg" : userType === 'admin' ? "/img/admin.png" : (profilePicture || "/img/admin.png")}
                 alt=""
               />
             <span>{userType === 'club' ? "Lions" : userType === 'admin' ? "Admin" : (currentUser?.first_name || currentUser?.username || "Anna")}</span>

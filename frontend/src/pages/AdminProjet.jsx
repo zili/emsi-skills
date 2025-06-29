@@ -67,7 +67,7 @@ const AdminProjet = () => {
 
   const deleteProject = async (projectId) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return;
-    
+
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(`http://localhost:8000/api/projects/${projectId}/`, {
@@ -248,7 +248,7 @@ const AdminProjet = () => {
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(400px, 1fr))', gap:24}}>
               {filteredProjects.map(project => (
                 <div 
-                  key={project.id}
+                  key={project.id} 
                   style={{
                     background:'#fff',
                     border:'2px solid #e6f4ee',
@@ -270,9 +270,9 @@ const AdminProjet = () => {
                 >
                   {/* Image et statut */}
                   <div style={{position:'relative', marginBottom:16}}>
-                    <img 
-                      src={project.image || "https://images.pexels.com/photos/580151/pexels-photo-580151.jpeg?auto=compress&cs=tinysrgb&w=1600"} 
-                      alt={project.title}
+                  <img 
+                    src={project.image || "https://images.pexels.com/photos/580151/pexels-photo-580151.jpeg?auto=compress&cs=tinysrgb&w=1600"} 
+                    alt={project.title}
                       style={{width:'100%', height:160, borderRadius:8, objectFit:'cover'}}
                     />
                     <div style={{
