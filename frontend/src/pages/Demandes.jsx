@@ -1,113 +1,137 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Demandes.scss";
+import ApiService from "../services/api";
 
 const Demandes = () => {
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projets, setProjets] = useState([]);
+  const [projectCandidatures, setProjectCandidatures] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [candidaturesLoading, setCandidaturesLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Données d'exemple des projets
-  const projets = [
-    {
-      id: 1,
-      titre: "Application mobile de gestion des étudiants",
-      description: "Développement d'une application mobile pour gérer les informations des étudiants",
-      status: "en_cours",
-      candidatures_count: 12,
-      date_creation: "2024-01-15",
-      duree: "3 mois",
-      competences: ["React Native", "Node.js", "MongoDB"],
-      candidatures: [
-        {
-          id: 1,
-          nom: "Ahmed Benali",
-          prenom: "Ahmed",
-          email: "ahmed.benali@emsi.ma",
-          photo: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1600",
-          competences: ["React Native", "JavaScript", "MongoDB"],
-          motivation: "Je suis passionné par le développement mobile et j'ai déjà réalisé plusieurs projets similaires...",
-          date_candidature: "2024-01-16",
-          status: "en_attente"
-        },
-        {
-          id: 2,
-          nom: "Zilili",
-          prenom: "Yassine",
-          email: "yassine.zilili@emsi-edu.ma",
-          photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600",
-          competences: [], // Pas de compétences réelles
-          motivation: "Candidature de test",
-          date_candidature: "2024-01-17",
-          status: "en_attente",
-          utilisateur_id: 10 // ID réel de Yassine Zilili dans la base
-        }
-      ]
-    },
-    {
-      id: 2,
-      titre: "Site web pour club étudiant",
-      description: "Création d'un site web moderne pour promouvoir les activités du club",
-      status: "termine",
-      candidatures_count: 8,
-      date_creation: "2023-12-10",
-      duree: "2 mois",
-      competences: ["React", "CSS", "JavaScript"],
-      candidatures: [
-        {
-          id: 3,
-          nom: "Omar Alami",
-          prenom: "Omar",
-          email: "omar.alami@emsi.ma",
-          photo: "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=1600",
-          competences: ["React", "CSS", "JavaScript"],
-          motivation: "Spécialisé en développement web frontend avec une forte expérience en React...",
-          date_candidature: "2023-12-12",
-          status: "accepte"
-        }
-      ]
+  // Charger les projets de l'utilisateur au montage du composant
+  useEffect(() => {
+    loadMyProjects();
+  }, []);
+
+  const loadMyProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await ApiService.request('/projects/my-projects/');
+      console.log('📋 Mes projets chargés:', response);
+      
+      // L'API retourne un objet paginé avec results
+      const projects = response.results || [];
+      setProjets(projects);
+      
+      if (projects.length === 0) {
+        console.log('ℹ️ Aucun projet trouvé pour cet utilisateur');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des projets:', error);
+      setError('Erreur lors du chargement des projets');
+      setProjets([]); // Assurer que projets est toujours un tableau
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const loadProjectCandidatures = async (projectId) => {
+    try {
+      setCandidaturesLoading(true);
+      const response = await ApiService.request(`/candidatures/project/${projectId}/`);
+      console.log('📋 Candidatures chargées pour le projet:', response);
+      
+      // Extraire les candidatures de la réponse
+      const candidatures = response.candidatures || [];
+      setProjectCandidatures(Array.isArray(candidatures) ? candidatures : []);
+      
+      console.log(`ℹ️ ${candidatures.length} candidature(s) trouvée(s)`);
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des candidatures:', error);
+      setProjectCandidatures([]);
+    } finally {
+      setCandidaturesLoading(false);
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      en_cours: { label: "En cours", class: "status-progress" },
-      termine: { label: "Terminé", class: "status-completed" },
-      en_attente: { label: "En attente", class: "status-pending" }
+      pending: { label: "En attente", class: "status-pending" },
+      approved: { label: "Approuvé", class: "status-approved" },
+      in_progress: { label: "En cours", class: "status-progress" },
+      completed: { label: "Terminé", class: "status-completed" },
+      cancelled: { label: "Annulé", class: "status-cancelled" },
+      rejected: { label: "Rejeté", class: "status-rejected" }
     };
     return statusConfig[status] || { label: status, class: "status-default" };
   };
 
   const getCandidatureStatusBadge = (status) => {
     const statusConfig = {
-      en_attente: { label: "En attente", class: "status-pending" },
-      accepte: { label: "Accepté", class: "status-accepted" },
-      refuse: { label: "Refusé", class: "status-refused" }
+      pending: { label: "En attente", class: "status-pending" },
+      accepted: { label: "Accepté", class: "status-accepted" },
+      rejected: { label: "Refusé", class: "status-refused" },
+      withdrawn: { label: "Retiré", class: "status-withdrawn" }
     };
     return statusConfig[status] || { label: status, class: "status-default" };
   };
 
-  const handleAcceptCandidature = (candidatureId) => {
-    console.log("Accepter candidature:", candidatureId);
-    // Ici vous pouvez ajouter la logique pour accepter la candidature
+  const handleAcceptCandidature = async (candidatureId) => {
+    try {
+      console.log("🔄 Acceptation candidature:", candidatureId);
+      await ApiService.request(`/candidatures/${candidatureId}/accept/`, {
+        method: 'PATCH'
+      });
+      
+      // Recharger les candidatures pour mettre à jour l'affichage
+      if (selectedProject) {
+        await loadProjectCandidatures(selectedProject.id);
+      }
+      
+      console.log("✅ Candidature acceptée avec succès");
+    } catch (error) {
+      console.error("❌ Erreur lors de l'acceptation:", error);
+      alert("Erreur lors de l'acceptation de la candidature");
+    }
   };
 
-  const handleRefuseCandidature = (candidatureId) => {
-    console.log("Refuser candidature:", candidatureId);
-    // Ici vous pouvez ajouter la logique pour refuser la candidature
+  const handleRefuseCandidature = async (candidatureId) => {
+    const reason = prompt("Raison du refus (optionnel):");
+    
+    try {
+      console.log("🔄 Refus candidature:", candidatureId);
+      await ApiService.request(`/candidatures/${candidatureId}/reject/`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          rejection_reason: reason || ''
+        })
+      });
+      
+      // Recharger les candidatures pour mettre à jour l'affichage
+      if (selectedProject) {
+        await loadProjectCandidatures(selectedProject.id);
+      }
+      
+      console.log("✅ Candidature refusée avec succès");
+    } catch (error) {
+      console.error("❌ Erreur lors du refus:", error);
+      alert("Erreur lors du refus de la candidature");
+    }
   };
 
   const handleViewPortfolio = (candidatureId) => {
-    // Trouver la candidature correspondante pour obtenir les informations du candidat
-    let candidature = null;
-    for (const projet of projets) {
-      candidature = projet.candidatures.find(c => c.id === candidatureId);
-      if (candidature) break;
-    }
+    // Trouver la candidature correspondante dans projectCandidatures
+    const candidature = projectCandidatures.find(c => c.id === candidatureId);
     
-    if (candidature) {
-      // Naviguer vers la page portfolio avec les données du candidat
+    if (candidature && candidature.candidate) {
+      // Naviguer vers la page portfolio avec l'ID du candidat
       navigate('/portfolio-view', { 
         state: { 
+          userId: candidature.candidate.id,
           candidature: candidature,
           fromDemandes: true 
         } 
@@ -115,8 +139,10 @@ const Demandes = () => {
     }
   };
 
-  const handleProjectClick = (projet) => {
+  const handleProjectClick = async (projet) => {
     setSelectedProject(projet);
+    // Charger les candidatures pour ce projet
+    await loadProjectCandidatures(projet.id);
   };
 
   if (selectedProject) {
@@ -128,8 +154,8 @@ const Demandes = () => {
               ← Retour aux projets
             </button>
             <div className="header-content">
-              <h1>Candidatures - {selectedProject.titre}</h1>
-              <p>{selectedProject.candidatures.length} candidature(s) reçue(s)</p>
+              <h1>Candidatures - {selectedProject.title}</h1>
+              <p>{candidaturesLoading ? 'Chargement...' : `${projectCandidatures.length} candidature(s) reçue(s)`}</p>
             </div>
           </div>
 
@@ -205,7 +231,20 @@ const Demandes = () => {
                 </tr>
               </thead>
               <tbody>
-                {selectedProject.candidatures.map(candidature => (
+                {candidaturesLoading ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                      Chargement des candidatures...
+                    </td>
+                  </tr>
+                ) : projectCandidatures.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                      Aucune candidature pour ce projet
+                    </td>
+                  </tr>
+                ) : (
+                  projectCandidatures.map(candidature => (
                   <tr key={candidature.id} style={{
                     transition: 'background-color 0.2s ease'
                   }}>
@@ -217,7 +256,7 @@ const Demandes = () => {
                       color: '#124f31',
                       fontSize: '1rem'
                     }}>
-                      {candidature.prenom} {candidature.nom}
+                      {candidature.display_name || candidature.candidate?.full_name || 'Nom non disponible'}
                     </td>
                     <td className="candidat-email" style={{
                       padding: '15px 12px',
@@ -226,7 +265,7 @@ const Demandes = () => {
                       color: '#666',
                       fontSize: '0.9rem'
                     }}>
-                      {candidature.email}
+                      {candidature.candidate?.email || 'Email non disponible'}
                     </td>
                     <td style={{
                       padding: '15px 12px',
@@ -240,8 +279,8 @@ const Demandes = () => {
                         fontWeight: '600',
                         textTransform: 'uppercase',
                         display: 'inline-block',
-                        background: candidature.status === 'en_attente' ? '#fef3c7' : candidature.status === 'accepte' ? '#dcfce7' : '#fee2e2',
-                        color: candidature.status === 'en_attente' ? '#d97706' : candidature.status === 'accepte' ? '#16a34a' : '#dc2626'
+                        background: candidature.status === 'pending' ? '#fef3c7' : candidature.status === 'accepted' ? '#dcfce7' : '#fee2e2',
+                        color: candidature.status === 'pending' ? '#d97706' : candidature.status === 'accepted' ? '#16a34a' : '#dc2626'
                       }}>
                         {getCandidatureStatusBadge(candidature.status).label}
                       </span>
@@ -253,7 +292,7 @@ const Demandes = () => {
                       color: '#999',
                       fontSize: '0.9rem'
                     }}>
-                      {new Date(candidature.date_candidature).toLocaleDateString('fr-FR')}
+                      {candidature.applied_at ? new Date(candidature.applied_at).toLocaleDateString('fr-FR') : 'N/A'}
                     </td>
                     <td className="actions-cell" style={{
                       padding: '15px 12px',
@@ -281,7 +320,7 @@ const Demandes = () => {
                         Voir Portfolio
                       </button>
                       
-                      {candidature.status === 'en_attente' && (
+                      {candidature.status === 'pending' && (
                         <>
                           <button 
                             className="btn-accept-table" 
@@ -324,7 +363,8 @@ const Demandes = () => {
                       )}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -344,15 +384,31 @@ const Demandes = () => {
         <div className="content">
           <div className="projects-section">
             <h2>Vos Projets</h2>
-            <div className="projects-grid">
-              {projets.map(projet => (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <p>Chargement de vos projets...</p>
+              </div>
+            ) : error ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'red' }}>
+                <p>{error}</p>
+                <button onClick={loadMyProjects} style={{ marginTop: '10px', padding: '8px 16px', cursor: 'pointer' }}>
+                  Réessayer
+                </button>
+              </div>
+            ) : projets.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <p>Vous n'avez créé aucun projet pour le moment.</p>
+              </div>
+            ) : (
+              <div className="projects-grid">
+                {Array.isArray(projets) && projets.map(projet => (
                 <div 
                   key={projet.id} 
                   className="project-card clickable"
                   onClick={() => handleProjectClick(projet)}
                 >
                   <div className="project-header">
-                    <h3>{projet.titre}</h3>
+                    <h3>{projet.title}</h3>
                     <span className={`status-badge ${getStatusBadge(projet.status).class}`}>
                       {getStatusBadge(projet.status).label}
                     </span>
@@ -363,20 +419,20 @@ const Demandes = () => {
                   <div className="project-meta">
                     <div className="meta-item">
                       <span className="meta-label">Candidatures:</span>
-                      <span className="meta-value">{projet.candidatures_count}</span>
+                      <span className="meta-value">{projet.applications_count || 0}</span>
                     </div>
                     <div className="meta-item">
                       <span className="meta-label">Durée:</span>
-                      <span className="meta-value">{projet.duree}</span>
+                      <span className="meta-value">{projet.estimated_duration || 'Non définie'}</span>
                     </div>
                     <div className="meta-item">
                       <span className="meta-label">Créé le:</span>
-                      <span className="meta-value">{new Date(projet.date_creation).toLocaleDateString('fr-FR')}</span>
+                      <span className="meta-value">{new Date(projet.created_at).toLocaleDateString('fr-FR')}</span>
                     </div>
                   </div>
 
                   <div className="project-skills">
-                    {projet.competences.map((skill, index) => (
+                    {(projet.required_skills_list || []).map((skill, index) => (
                       <span key={index} className="skill-tag">{skill}</span>
                     ))}
                   </div>
@@ -385,8 +441,9 @@ const Demandes = () => {
                     <span>Cliquez pour voir les candidatures →</span>
                   </div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
