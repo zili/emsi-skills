@@ -198,18 +198,6 @@ const Candidature = () => {
     <div className="candidature-container">
       <h1 className="candidature-title">Mes Candidatures</h1>
       
-      {/* Message informatif */}
-      <div style={{ 
-        background: 'rgba(23, 143, 86, 0.1)', 
-        border: '1px solid #178f56', 
-        borderRadius: '8px', 
-        padding: '1rem', 
-        marginBottom: '1.5rem',
-        color: '#124f31'
-      }}>
-        📋 Candidatures de Yassine Zilili - {candidatures.length} candidature(s) au total
-      </div>
-      
       {/* Statistiques */}
       <div className="stats-container">
         <div className="stat-card">

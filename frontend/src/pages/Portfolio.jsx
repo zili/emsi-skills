@@ -7,11 +7,20 @@ const Portfolio = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hoveredButton, setHoveredButton] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    photo: '',
+    description: '',
+    linkedin: '',
+    cv: '',
+    skills: [],
+    languages: []
+  });
 
   // Données par défaut pour Yassine Zilili (sans authentification)
   useEffect(() => {
     setTimeout(() => {
-      setProfileData({
+      const data = {
         name: "Yassine Zilili",
         photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=400",
         description: "Étudiant en ingénierie informatique passionné par le développement web et l'innovation.",
@@ -53,7 +62,19 @@ const Portfolio = () => {
           total_evaluations: 8,
           taux_recommandation: 95
         }
+      };
+      setProfileData(data);
+      
+      // Initialiser le formulaire d'édition
+      setEditForm({
+        photo: data.photo,
+        description: data.description,
+        linkedin: data.linkedin,
+        cv: data.cv,
+        skills: data.skills,
+        languages: data.languages
       });
+      
       setLoading(false);
     }, 500);
   }, []);
@@ -79,6 +100,42 @@ const Portfolio = () => {
       const cvUrl = 'https://www.canva.com/create/resumes/';
       window.open(cvUrl, '_blank');
       console.log('Redirection vers création de CV');
+    }
+  };
+
+  const handleEditProfile = () => {
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = () => {
+    // Mettre à jour les données du profil
+    setProfileData({
+      ...profileData,
+      photo: editForm.photo,
+      description: editForm.description,
+      linkedin: editForm.linkedin,
+      cv: editForm.cv,
+      skills: editForm.skills,
+      languages: editForm.languages
+    });
+    setShowEditModal(false);
+    alert('Profil mis à jour avec succès !');
+  };
+
+  const handleFileUpload = (event, type) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (type === 'photo') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setEditForm({...editForm, photo: e.target.result});
+        };
+        reader.readAsDataURL(file);
+      } else if (type === 'cv') {
+        // Simuler l'upload du CV
+        setEditForm({...editForm, cv: `cv_${file.name}`});
+        alert('CV téléchargé avec succès !');
+      }
     }
   };
 
@@ -201,10 +258,7 @@ const Portfolio = () => {
               CV
             </button>
             <button 
-              onClick={() => {
-                alert('Fonctionnalité de modification en cours de développement!');
-                console.log('Clic sur modifier le profil');
-              }}
+              onClick={handleEditProfile}
               onMouseEnter={() => setHoveredButton('modifier')}
               onMouseLeave={() => setHoveredButton(null)}
               style={getButtonStyle('modifier')}
@@ -280,6 +334,406 @@ const Portfolio = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal d'édition du profil */}
+      {showEditModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#124f31',
+            borderRadius: '12px',
+            width: '90%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            {/* Header du modal */}
+            <div style={{
+              background: '#124f31',
+              padding: '1.5rem',
+              borderRadius: '12px 12px 0 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              color: 'white'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  padding: '12px',
+                  borderRadius: '8px'
+                }}>
+                  ⚙️
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Modifier mon profil</h2>
+                  <p style={{ margin: 0, opacity: 0.8 }}>Personnalisez vos informations professionnelles</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Contenu du modal */}
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '0 0 12px 12px'
+            }}>
+              {/* Section Photo de profil */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ 
+                  color: '#333', 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  Photo de profil
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <img 
+                    src={editForm.photo} 
+                    alt="Photo de profil"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid #178f56'
+                    }}
+                  />
+                  <div>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'photo')}
+                      style={{ display: 'none' }}
+                      id="photo-upload"
+                    />
+                    <label 
+                      htmlFor="photo-upload"
+                      style={{
+                        background: '#178f56',
+                        color: 'white',
+                        padding: '0.8rem 1.5rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        border: 'none',
+                        fontSize: '1rem'
+                      }}
+                    >
+                      Choisir une photo
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section Description professionnelle */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ 
+                  color: '#333', 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  Description professionnelle
+                </h3>
+                <textarea 
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                  style={{
+                    width: '100%',
+                    minHeight: '120px',
+                    padding: '1rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                  placeholder="Décrivez votre parcours professionnel..."
+                />
+              </div>
+
+              {/* Section Compétences */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ 
+                  color: '#333', 
+                  marginBottom: '1rem'
+                }}>
+                  Compétences
+                </h3>
+                <div style={{ marginBottom: '1rem' }}>
+                  <input 
+                    type="text"
+                    placeholder="Ajouter une compétence (ex: React, Python, Design...)"
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '1rem'
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        const newSkill = e.target.value.trim();
+                        if (!editForm.skills.includes(newSkill)) {
+                          setEditForm({
+                            ...editForm, 
+                            skills: [...editForm.skills, newSkill]
+                          });
+                        }
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {editForm.skills.map((skill, index) => (
+                    <span 
+                      key={index}
+                      style={{
+                        background: '#e6f7f0',
+                        color: '#178f56',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        fontSize: '0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      {skill}
+                      <button
+                        onClick={() => {
+                          setEditForm({
+                            ...editForm,
+                            skills: editForm.skills.filter((_, i) => i !== index)
+                          });
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#178f56',
+                          cursor: 'pointer',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section Langues */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ 
+                  color: '#333', 
+                  marginBottom: '1rem'
+                }}>
+                  Langues
+                </h3>
+                <div style={{ marginBottom: '1rem' }}>
+                  <input 
+                    type="text"
+                    placeholder="Ajouter une langue (ex: Français, Anglais, Arabe...)"
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      fontSize: '1rem'
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        const newLanguage = e.target.value.trim();
+                        if (!editForm.languages.includes(newLanguage)) {
+                          setEditForm({
+                            ...editForm, 
+                            languages: [...editForm.languages, newLanguage]
+                          });
+                        }
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {editForm.languages.map((language, index) => (
+                    <span 
+                      key={index}
+                      style={{
+                        background: '#e6f7f0',
+                        color: '#178f56',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        fontSize: '0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      {language}
+                      <button
+                        onClick={() => {
+                          setEditForm({
+                            ...editForm,
+                            languages: editForm.languages.filter((_, i) => i !== index)
+                          });
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#178f56',
+                          cursor: 'pointer',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section Liens professionnels */}
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ 
+                  color: '#333', 
+                  marginBottom: '1rem'
+                }}>
+                  Liens professionnels
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  {/* LinkedIn */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      LinkedIn
+                    </label>
+                    <input 
+                      type="url"
+                      value={editForm.linkedin}
+                      onChange={(e) => setEditForm({...editForm, linkedin: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '1rem'
+                      }}
+                      placeholder="https://linkedin.com/in/yassine-zilili"
+                    />
+                  </div>
+
+                  {/* CV */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                      CV (Fichier)
+                    </label>
+                    <div>
+                      <input 
+                        type="file" 
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => handleFileUpload(e, 'cv')}
+                        style={{ display: 'none' }}
+                        id="cv-upload"
+                      />
+                      <label 
+                        htmlFor="cv-upload"
+                        style={{
+                          background: '#6c757d',
+                          color: 'white',
+                          padding: '0.8rem 1.5rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          border: 'none',
+                          fontSize: '1rem',
+                          width: '100%',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        Télécharger CV
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Boutons d'action */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '1rem', 
+                justifyContent: 'flex-end',
+                paddingTop: '1rem',
+                borderTop: '1px solid #eee'
+              }}>
+                <button 
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    background: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={handleSaveProfile}
+                  style={{
+                    background: '#178f56',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.8rem 1.5rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sections projets et commentaires */}
       <div style={{ 
