@@ -118,6 +118,7 @@ const Projets = () => {
   const [projets, setProjets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [dataSource, setDataSource] = useState(''); // 'api' ou 'mock'
   const navigate = useNavigate();
 
   // Charger les projets depuis l'API
@@ -125,6 +126,8 @@ const Projets = () => {
     const fetchProjets = async () => {
       try {
         console.log('🔄 Chargement des projets depuis l\'API...');
+        console.log('🌐 URL appelée:', 'http://localhost:8000/api/projects/simple/');
+        
         const response = await fetch('http://localhost:8000/api/projects/simple/', {
           method: 'GET',
           headers: {
@@ -132,40 +135,86 @@ const Projets = () => {
           },
         });
 
-        console.log('📡 Réponse projets:', response.status, response.statusText);
+        console.log('📡 Réponse projets:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          url: response.url
+        });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json();
         console.log('📊 Données projets reçues:', data);
+        console.log('📊 Nombre de projets:', data.length);
         
-        // Transformer les données pour qu'elles correspondent au format attendu par le frontend
-        const transformedProjets = data.map(projet => ({
-          id: projet.id,
-          nom: projet.title,
-          categorie: projet.category?.name || 'Autre',
-          image: projet.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80',
-          client: projet.client?.full_name || projet.client?.email || 'Client',
-          date: new Date(projet.created_at).toLocaleDateString('fr-FR'),
-          duree: projet.estimated_duration || 'Non définie',
-          tags: projet.tags?.map(tag => tag.name) || [],
-        }));
+        // Debug détaillé pour chaque projet
+        if (data.length > 0) {
+          console.log('🔍 Premier projet (structure complète):', JSON.stringify(data[0], null, 2));
+          console.log('🔍 Client du premier projet:', data[0].client);
+          console.log('🔍 Client stringifié:', JSON.stringify(data[0].client, null, 2));
+          console.log('🔍 Tags du premier projet:', data[0].tags);
+          console.log('🔍 Owner du premier projet:', data[0].owner);
+        }
+        
+        // Vérifier s'il y a des données
+        if (!data || data.length === 0) {
+          console.warn('⚠️ Aucun projet retourné par l\'API');
+          setProjets([]);
+          setError('Aucun projet disponible dans la base de données.');
+          return;
+        }
+        
+        // Transformer les données (le backend retourne maintenant les bonnes données)
+        const transformedProjets = data.map(projet => {
+          console.log('🔄 Transformation du projet:', {
+            id: projet.id,
+            title: projet.title,
+            client: projet.client,
+            tags: projet.tags
+          });
+          
+          // Le backend retourne maintenant les vraies données
+          const clientName = projet.client?.full_name || 
+                            (projet.client?.first_name && projet.client?.last_name ? 
+                             `${projet.client.first_name} ${projet.client.last_name}` : 
+                             projet.client?.username || projet.client?.email || 'Client');
+          
+          const projectTags = projet.tags?.map(tag => tag.name) || [];
+          
+          console.log('🎯 Client final:', clientName);
+          console.log('🏷️ Tags finaux:', projectTags);
+          
+          return {
+            id: projet.id,
+            nom: projet.title,
+            categorie: projet.category?.name || 'Autre',
+            image: projet.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80',
+            client: clientName,
+            date: new Date(projet.created_at).toLocaleDateString('fr-FR'),
+            duree: projet.estimated_duration || 'Non définie',
+            tags: projectTags,
+          };
+        });
 
+        console.log('✅ Projets transformés:', transformedProjets);
         setProjets(transformedProjets);
+        setDataSource('api');
+        setError(''); // Clear any previous errors
         console.log('✅ Projets chargés avec succès:', transformedProjets.length);
         
       } catch (error) {
         console.error('❌ Erreur lors du chargement des projets:', error);
-        setError('Impossible de charger les projets. Utilisation des données de démonstration.');
+        console.error('❌ Stack trace:', error.stack);
         
-        // Fallback avec les données mockées
-        setProjets(initialProjets.map(p => ({
-          ...p,
-          nom: p.nom || p.title,
-          categorie: p.categorie || p.category,
-        })));
+        // Afficher l'erreur mais ne pas utiliser les données mockées automatiquement
+        setError(`Erreur lors du chargement des projets: ${error.message}`);
+        setProjets([]); // Projets vides au lieu de données mockées
+        
+        // Optionnel: permettre à l'utilisateur de forcer l'utilisation des données mockées
+        console.log('💡 Données mockées disponibles si nécessaire');
       } finally {
         setLoading(false);
       }
@@ -205,6 +254,28 @@ const Projets = () => {
       </aside>
       <div className="projets-main">
         <div className="projets-header">
+          {/* Indicateur de source des données */}
+          {dataSource && (
+            <div style={{
+              marginBottom: '16px',
+              padding: '8px 12px',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              display: 'inline-block',
+              ...(dataSource === 'api' ? {
+                backgroundColor: '#e6f7ff',
+                color: '#1890ff',
+                border: '1px solid #91d5ff'
+              } : {
+                backgroundColor: '#fff7e6',
+                color: '#fa8c16',
+                border: '1px solid #ffd591'
+              })
+            }}>
+              {dataSource === 'api' ? '🌐 Données en temps réel (API)' : '📦 Données de démonstration'}
+            </div>
+          )}
           <div className="search-container">
             <div className="search-input">
               <FaSearch className="search-icon" />
@@ -243,11 +314,46 @@ const Projets = () => {
             background: '#fff3cd', 
             border: '1px solid #ffeaa7', 
             borderRadius: '8px', 
-            padding: '12px', 
+            padding: '16px', 
             margin: '20px 0', 
             color: '#856404'
           }}>
-            ⚠️ {error}
+            <div style={{ marginBottom: '12px' }}>⚠️ {error}</div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#1dbf73',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                🔄 Recharger
+              </button>
+              <button 
+                onClick={() => {
+                  console.log('📦 Utilisation des données de démonstration');
+                  setProjets(initialProjets);
+                  setDataSource('mock');
+                  setError('');
+                }}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ff9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                📦 Utiliser les données de test
+              </button>
+            </div>
           </div>
         )}
         

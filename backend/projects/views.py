@@ -185,31 +185,40 @@ def my_project_stats(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def simple_projects_list(request):
-    """Liste simple des projets sans les relations complexes"""
+    """Liste simple des projets avec les vraies données"""
     try:
-        # Récupérer les projets directement sans utiliser les relations
+        # Récupérer tous les projets avec leurs relations (approuvés ET en attente)
         projects = Project.objects.filter(
-            admin_status='approved',
-            status='approved'
-        ).values(
-            'id', 'title', 'description', 'estimated_duration',
-            'required_skills', 'created_at'
-        )[:10]
+            admin_status='approved'
+        ).select_related('client', 'category')
         
         # Transformer en format attendu par le frontend
         projects_data = []
         for project in projects:
+            # Récupérer les vraies données du client
+            client_data = {
+                'full_name': project.client.full_name if project.client else 'Client',
+                'first_name': project.client.first_name if project.client else '',
+                'last_name': project.client.last_name if project.client else '',
+                'email': project.client.email if project.client else '',
+                'username': project.client.username if project.client else ''
+            }
+            
+            # Récupérer les vraies compétences
+            skills_list = project.get_required_skills_list()
+            tags_data = [{'name': skill} for skill in skills_list] if skills_list else []
+            
             projects_data.append({
-                'id': project['id'],
-                'title': project['title'],
-                'description': project['description'],
-                'category': {'name': 'Développement'},  # Catégorie par défaut
-                'client': {'full_name': 'Client EMSI', 'email': 'client@emsi.ma'},
-                'estimated_duration': project['estimated_duration'] or '2 mois',
-                'required_skills': project['required_skills'] or 'React.js, Django',
-                'created_at': project['created_at'],
-                'tags': [{'name': 'React.js'}, {'name': 'Django'}],  # Tags par défaut
-                'image': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80'
+                'id': project.id,
+                'title': project.title,
+                'description': project.description,
+                'category': {'name': project.category.name if project.category else 'Autre'},
+                'client': client_data,
+                'estimated_duration': project.estimated_duration or 'Non définie',
+                'required_skills': project.required_skills or '',
+                'created_at': project.created_at,
+                'tags': tags_data,
+                'image': project.main_image.url if project.main_image else 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80'
             })
         
         return Response(projects_data)
