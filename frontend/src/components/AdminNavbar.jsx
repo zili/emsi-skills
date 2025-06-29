@@ -32,7 +32,15 @@ const AdminNavbar = () => {
           </NavLink>
         ))}
       </div>
-      <div style={{flex:1, display:'flex', justifyContent:'flex-end'}}>
+      <div style={{flex:1, display:'flex', justifyContent:'flex-end', alignItems:'center', gap:16}}>
+        <div style={{display:'flex', alignItems:'center', gap:12, background:'#f8f9fa', padding:'8px 16px', borderRadius:25, border:'2px solid #e9ecef'}}>
+          <img 
+            src="/img/admin.png" 
+            alt="Admin" 
+            style={{width:40, height:40, borderRadius:'50%', objectFit:'cover', border:'2px solid #116b41'}}
+          />
+          <span style={{fontWeight:700, color:'#116b41', fontSize:16}}>Admin</span>
+        </div>
         <button onClick={handleLogout} style={{background:'#ff4d4d', color:'#fff', border:'none', borderRadius:8, padding:'8px 18px', fontWeight:700, cursor:'pointer'}}>Se déconnecter</button>
       </div>
     </header>

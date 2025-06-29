@@ -45,11 +45,15 @@ const villesData = [
 const AdminHeader = ({periode, setPeriode}) => (
   <header className="admin-header-pro">
     <div className="header-left">
-      <h1>Bienvenue, Admin !</h1>
-      <span className="header-sub">Voici les dernières statistiques de la plateforme.</span>
+      <h1>Hey, Admin !</h1>
     </div>
-    <div className="header-actions">
-      <select className="periode-select" value={periode} onChange={e => setPeriode(e.target.value)}>
+   
+    <div className="header-right">
+      <div style={{display:'flex', alignItems:'center', gap:12, background:'#f8f9fa', padding:'8px 16px', borderRadius:25, border:'2px solid #e9ecef', marginRight:16}}>
+       
+       
+      </div>
+      <select className="periode-select" value={periode} onChange={e => setPeriode(e.target.value)} style={{padding:'8px 16px', borderRadius:8, border:'2px solid #1dbf73', background:'white', color:'#124f31', fontWeight:600}}>
         <option>Cette semaine</option>
         <option>Ce mois</option>
         <option>Cette année</option>
