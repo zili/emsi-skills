@@ -33,7 +33,12 @@ const mockCandidatures = [
     project: {
       id: 1,
       title: "Développement d'une application mobile",
-        category: "IT"
+      category: "IT",
+      owner: {
+        full_name: "Lions Tanger",
+        first_name: "Lions",
+        last_name: "Tanger"
+      }
     }
   },
   {
@@ -48,7 +53,12 @@ const mockCandidatures = [
     project: {
       id: 2,
       title: "Refonte graphique d'un site web",
-        category: "Art"
+      category: "Art",
+      owner: {
+        full_name: "Ahmed Bennani",
+        first_name: "Ahmed",
+        last_name: "Bennani"
+      }
     }
   },
   {
@@ -64,7 +74,12 @@ const mockCandidatures = [
     project: {
       id: 3,
       title: "Organisation d'un événement caritatif",
-        category: "Bénévole"
+      category: "Bénévole",
+      owner: {
+        full_name: "Club Étudiant EMSI",
+        first_name: "Club",
+        last_name: "Étudiant"
+      }
     }
   },
   {
@@ -78,9 +93,14 @@ const mockCandidatures = [
       relevant_experience: "Supervision de 2 projets techniques complexes en tant que lead developer",
     project: {
       id: 4,
-        title: "Supervision de projet technique",
-        category: "IT"
+      title: "Supervision de projet technique",
+      category: "IT",
+      owner: {
+        full_name: "Fatima Idrissi",
+        first_name: "Fatima",
+        last_name: "Idrissi"
       }
+    }
     }
   ];
 
@@ -125,7 +145,8 @@ const mockCandidatures = [
         project: {
           id: c.project?.id,
           title: c.project?.title,
-          category: c.project?.category
+          category: c.project?.category,
+          client: c.project?.client
         }
       }));
       
@@ -304,7 +325,11 @@ const mockCandidatures = [
                 <div className="project-info">
                   <h3>{candidature.project?.title || 'Projet sans titre'}</h3>
                   <p className="project-owner">
-                    Projet #{candidature.project?.id || 'N/A'}
+                    {candidature.project?.client?.full_name 
+                      ? `Proposé par: ${candidature.project.client.full_name}`
+                      : candidature.project?.client?.first_name 
+                        ? `Proposé par: ${candidature.project.client.first_name} ${candidature.project.client.last_name || ''}`
+                        : `Projet #${candidature.project?.id || 'N/A'}`}
                   </p>
                 </div>
                 <div className="candidature-status">
@@ -315,15 +340,7 @@ const mockCandidatures = [
               </div>
               
               <div className="candidature-body">
-                <div className="project-description">
-                  <h4>Votre lettre de motivation:</h4>
-                  <p>{candidature.cover_letter || 'Aucune lettre de motivation fournie'}</p>
-                </div>
-                
                 <div className="candidature-meta">
-                  <div className="meta-item">
-                    <strong>Catégorie:</strong> {candidature.project?.category || 'Non définie'}
-                  </div>
                   <div className="meta-item">
                     <strong>Candidature soumise le:</strong> {
                       candidature.applied_at 
@@ -338,11 +355,7 @@ const mockCandidatures = [
                       }
                     </div>
                   )}
-                  {candidature.proposed_budget && (
-                    <div className="meta-item">
-                      <strong>Budget proposé:</strong> {candidature.proposed_budget}€
-                    </div>
-                  )}
+
                   {candidature.proposed_timeline && (
                     <div className="meta-item">
                       <strong>Délai proposé:</strong> {candidature.proposed_timeline}

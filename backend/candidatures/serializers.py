@@ -91,10 +91,11 @@ class CandidateInfoSerializer(serializers.ModelSerializer):
 
 class ProjectBriefSerializer(serializers.ModelSerializer):
     """Serializer bref pour le projet dans les candidatures"""
+    client = CandidateInfoSerializer(read_only=True)  # Ajout des infos du client/propriétaire
     
     class Meta:
         model = Project
-        fields = ['id', 'title', 'category', 'estimated_duration']
+        fields = ['id', 'title', 'category', 'estimated_duration', 'client']
 
 
 class CandidatureListSerializer(serializers.ModelSerializer):
