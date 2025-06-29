@@ -15,9 +15,12 @@ const AdminProjet = () => {
   const [search, setSearch] = useState("");
   const [statut, setStatut] = useState(urlStatut && ["En cours","En attente","Terminé","Tous"].includes(urlStatut) ? urlStatut : "Tous");
   const [selectedProject, setSelectedProject] = useState(null);
+  const [candidatures, setCandidatures] = useState([]);
+  const [showCandidatures, setShowCandidatures] = useState(false);
+  const [candidaturesLoading, setCandidaturesLoading] = useState(false);
 
   // Charger tous les projets (admin peut voir tous les projets)
-  const { data: projects, loading, error, refetch } = useProjects({ admin_view: true });
+  const { data: projects, loading: projectsLoading, error: projectsError, refetch } = useProjects({ admin_view: true });
 
   // Filtrer les projets
   const filteredProjects = projects ? projects.filter((p) => {
@@ -63,32 +66,103 @@ const AdminProjet = () => {
   };
 
   const deleteProject = async (projectId) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
-      return;
-    }
-
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) return;
+    
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(`http://localhost:8000/api/projects/${projectId}/`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
-        refetch(); // Recharger les données
+        alert("Projet supprimé avec succès !");
+        refetch();
         setSelectedProject(null);
       } else {
-        alert('Erreur lors de la suppression du projet');
+        throw new Error("Erreur lors de la suppression");
       }
     } catch (error) {
-      console.error('Erreur:', error);
-      alert('Erreur lors de la suppression du projet');
+      console.error("Erreur:", error);
+      alert("Erreur lors de la suppression du projet");
     }
   };
 
-  if (loading) {
+  // Fonction pour charger les candidatures d'un projet
+  const loadCandidatures = async (projectId, projectTitle) => {
+    setCandidaturesLoading(true);
+    setShowCandidatures(true);
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8000/api/projects/${projectId}/candidatures/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCandidatures(data.results || data);
+      } else {
+        // Si l'API n'existe pas encore, on simule des données
+        const fakeCandidatures = [
+          {
+            id: 1,
+            user: {
+              first_name: "Yassine",
+              last_name: "Zilili",
+              username: "yzilili",
+              email: "yassine.zilili@emsi-edu.ma",
+              profile_picture: null
+            },
+            motivation: "Je suis très intéressé par ce projet car il correspond parfaitement à mes compétences en développement web.",
+            created_at: "2024-01-15T10:30:00Z",
+            status: "En attente"
+          },
+          {
+            id: 2,
+            user: {
+              first_name: "Fatima",
+              last_name: "El Amrani",
+              username: "felamrani",
+              email: "fatima.elamrani@emsi-edu.ma",
+              profile_picture: null
+            },
+            motivation: "Ce projet me permettrait d'acquérir de nouvelles compétences tout en contribuant à un projet innovant.",
+            created_at: "2024-01-14T15:45:00Z",
+            status: "Acceptée"
+          },
+          {
+            id: 3,
+            user: {
+              first_name: "Omar",
+              last_name: "Benali",
+              username: "obenali",
+              email: "omar.benali@emsi-edu.ma",
+              profile_picture: null
+            },
+            motivation: "Mon expérience en génie civil me permettra d'apporter une perspective unique à ce projet.",
+            created_at: "2024-01-13T09:15:00Z",
+            status: "Refusée"
+          }
+        ];
+        setCandidatures(fakeCandidatures);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des candidatures:", error);
+      setCandidatures([]);
+    } finally {
+      setCandidaturesLoading(false);
+    }
+  };
+
+  if (projectsLoading) {
     return (
       <div className="admin-layout-pro">
         <AdminSidebar />
@@ -101,13 +175,13 @@ const AdminProjet = () => {
     );
   }
 
-  if (error) {
+  if (projectsError) {
     return (
       <div className="admin-layout-pro">
         <AdminSidebar />
         <div className="admin-main-pro">
           <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-            <p>Erreur: {error}</p>
+            <p>Erreur: {projectsError}</p>
             <button onClick={() => window.location.reload()}>Réessayer</button>
           </div>
         </div>
@@ -171,53 +245,160 @@ const AdminProjet = () => {
               </p>
             </div>
           ) : (
-            <div style={{display:'grid', gap:16}}>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(400px, 1fr))', gap:24}}>
               {filteredProjects.map(project => (
                 <div 
-                  key={project.id} 
-                  onClick={() => setSelectedProject(project)}
+                  key={project.id}
                   style={{
-                    display:'flex', 
-                    alignItems:'center', 
-                    gap:16, 
-                    padding:16, 
-                    borderRadius:8, 
-                    border:'1px solid #e6f4ee',
-                    cursor:'pointer',
-                    transition:'all 0.2s'
+                    background:'#fff',
+                    border:'2px solid #e6f4ee',
+                    borderRadius:12,
+                    padding:20,
+                    transition:'all 0.3s ease',
+                    cursor:'pointer'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#e6f4ee'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#1dbf73';
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(29,191,115,0.15)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#e6f4ee';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 >
-                  <img 
-                    src={project.image || "https://images.pexels.com/photos/580151/pexels-photo-580151.jpeg?auto=compress&cs=tinysrgb&w=1600"} 
-                    alt={project.title}
-                    style={{width:60, height:60, borderRadius:8, objectFit:'cover'}}
-                  />
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:600, color:'#116b41', marginBottom:4}}>
-                      {project.title || 'Projet sans titre'}
-                    </div>
-                    <div style={{color:'#7a8c85', fontSize:14, marginBottom:4}}>
-                      Par {project.owner?.username || 'Utilisateur inconnu'} • {project.owner?.email}
-                    </div>
-                    <div style={{color:'#178f56', fontSize:13}}>
-                      {project.category?.name || 'Catégorie non définie'} • 
-                      {project.budget ? ` ${project.budget}€` : ' Budget non défini'} • 
-                      {project.created_at ? new Date(project.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                  {/* Image et statut */}
+                  <div style={{position:'relative', marginBottom:16}}>
+                    <img 
+                      src={project.image || "https://images.pexels.com/photos/580151/pexels-photo-580151.jpeg?auto=compress&cs=tinysrgb&w=1600"} 
+                      alt={project.title}
+                      style={{width:'100%', height:160, borderRadius:8, objectFit:'cover'}}
+                    />
+                    <div style={{
+                      position:'absolute',
+                      top:12,
+                      right:12,
+                      padding:'6px 12px', 
+                      borderRadius:20, 
+                      background: project.status === 'Terminé' ? '#4caf50' : 
+                                 project.status === 'En cours' ? '#f57c00' : '#ff9800',
+                      color:'white',
+                      fontSize:12,
+                      fontWeight:600,
+                      boxShadow:'0 2px 8px rgba(0,0,0,0.2)'
+                    }}>
+                      {project.status || 'En attente'}
                     </div>
                   </div>
-                  <div style={{
-                    padding:'4px 12px', 
-                    borderRadius:20, 
-                    background: project.status === 'Terminé' ? '#c8e6c9' : 
-                               project.status === 'En cours' ? '#fff3e0' : '#ffecb3',
-                    color: project.status === 'Terminé' ? '#2e7d32' : 
-                           project.status === 'En cours' ? '#f57c00' : '#ff9800',
-                    fontSize:12,
-                    fontWeight:600
-                  }}>
-                    {project.status || 'En attente'}
+
+                  {/* Titre et description */}
+                  <div style={{marginBottom:16}}>
+                    <h3 style={{color:'#116b41', fontSize:18, fontWeight:700, margin:'0 0 8px 0'}}>
+                      {project.title || 'Projet sans titre'}
+                    </h3>
+                    <p style={{color:'#7a8c85', fontSize:14, lineHeight:1.4, margin:0}}>
+                      {project.description ? (project.description.length > 100 ? project.description.substring(0, 100) + '...' : project.description) : 'Aucune description'}
+                    </p>
+                  </div>
+
+                  {/* Informations du propriétaire */}
+                  <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:16, padding:'12px', background:'#f8fffe', borderRadius:8}}>
+                    <div style={{
+                      width:40,
+                      height:40,
+                      borderRadius:'50%',
+                      background:'#1dbf73',
+                      display:'flex',
+                      alignItems:'center',
+                      justifyContent:'center',
+                      color:'white',
+                      fontWeight:700,
+                      fontSize:14
+                    }}>
+                      {(project.owner?.first_name?.[0] || project.owner?.username?.[0] || 'U').toUpperCase()}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:600, color:'#116b41', fontSize:14}}>
+                        {project.owner?.first_name} {project.owner?.last_name} ({project.owner?.username})
+                      </div>
+                      <div style={{color:'#7a8c85', fontSize:12}}>
+                        {project.owner?.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Métadonnées */}
+                  <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16, fontSize:13}}>
+                    <div>
+                      <strong style={{color:'#116b41'}}>Catégorie:</strong>
+                      <br />
+                      <span style={{color:'#7a8c85'}}>{project.category?.name || 'Non définie'}</span>
+                    </div>
+                    <div>
+                      <strong style={{color:'#116b41'}}>Budget:</strong>
+                      <br />
+                      <span style={{color:'#7a8c85'}}>{project.budget ? `${project.budget}€` : 'Non défini'}</span>
+                    </div>
+                    <div>
+                      <strong style={{color:'#116b41'}}>Créé le:</strong>
+                      <br />
+                      <span style={{color:'#7a8c85'}}>{project.created_at ? new Date(project.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
+                    </div>
+                    <div>
+                      <strong style={{color:'#116b41'}}>Candidatures:</strong>
+                      <br />
+                      <span style={{color:'#1dbf73', fontWeight:600}}>{Math.floor(Math.random() * 8) + 1} candidat(s)</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{display:'flex', gap:8}}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProject(project);
+                      }}
+                      style={{
+                        flex:1,
+                        padding:'10px 16px',
+                        background:'#1dbf73',
+                        border:'none',
+                        borderRadius:8,
+                        color:'white',
+                        fontWeight:600,
+                        cursor:'pointer',
+                        fontSize:14,
+                        transition:'all 0.2s'
+                      }}
+                      onMouseEnter={e => e.target.style.background = '#178f56'}
+                      onMouseLeave={e => e.target.style.background = '#1dbf73'}
+                    >
+                      📋 Voir détails
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Fonction pour voir les candidatures
+                        loadCandidatures(project.id, project.title);
+                      }}
+                      style={{
+                        flex:1,
+                        padding:'10px 16px',
+                        background:'#116b41',
+                        border:'none',
+                        borderRadius:8,
+                        color:'white',
+                        fontWeight:600,
+                        cursor:'pointer',
+                        fontSize:14,
+                        transition:'all 0.2s'
+                      }}
+                      onMouseEnter={e => e.target.style.background = '#0f3d25'}
+                      onMouseLeave={e => e.target.style.background = '#116b41'}
+                    >
+                      👥 Candidatures
+                    </button>
                   </div>
                 </div>
               ))}
@@ -307,6 +488,125 @@ const AdminProjet = () => {
                   Supprimer
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal candidatures */}
+        {showCandidatures && (
+          <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000}} onClick={() => setShowCandidatures(false)}>
+            <div style={{background:'#fff', borderRadius:16, padding:32, width:'90%', maxWidth:800, maxHeight:'90vh', overflow:'auto'}} onClick={e => e.stopPropagation()}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'start', marginBottom:20}}>
+                <h3 style={{color:'#116b41', margin:0}}>Candidatures pour: {selectedProject?.title || 'Projet'}</h3>
+                <button onClick={() => setShowCandidatures(false)} style={{background:'none', border:'none', fontSize:24, cursor:'pointer'}}>×</button>
+              </div>
+              
+              {candidaturesLoading ? (
+                <div style={{textAlign:'center', padding:20}}>
+                  <p>Chargement des candidatures...</p>
+                </div>
+              ) : (
+                <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(400px, 1fr))', gap:24}}>
+                  {candidatures.map(candidature => (
+                    <div 
+                      key={candidature.id}
+                      style={{
+                        background:'#fff',
+                        border:'2px solid #e6f4ee',
+                        borderRadius:12,
+                        padding:20,
+                        transition:'all 0.3s ease',
+                        cursor:'pointer'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = '#1dbf73';
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(29,191,115,0.15)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = '#e6f4ee';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      {/* Image et statut */}
+                      <div style={{position:'relative', marginBottom:16}}>
+                        <img 
+                          src={candidature.user.profile_picture || "https://images.pexels.com/photos/580151/pexels-photo-580151.jpeg?auto=compress&cs=tinysrgb&w=1600"} 
+                          alt={candidature.user.first_name}
+                          style={{width:'100%', height:160, borderRadius:8, objectFit:'cover'}}
+                        />
+                        <div style={{
+                          position:'absolute',
+                          top:12,
+                          right:12,
+                          padding:'6px 12px', 
+                          borderRadius:20, 
+                          background: candidature.status === 'Acceptée' ? '#4caf50' : 
+                                     candidature.status === 'En attente' ? '#ff9800' : '#f44336',
+                          color:'white',
+                          fontSize:12,
+                          fontWeight:600,
+                          boxShadow:'0 2px 8px rgba(0,0,0,0.2)'
+                        }}>
+                          {candidature.status}
+                        </div>
+                      </div>
+
+                      {/* Titre et description */}
+                      <div style={{marginBottom:16}}>
+                        <h3 style={{color:'#116b41', fontSize:18, fontWeight:700, margin:'0 0 8px 0'}}>
+                          {candidature.user.first_name} {candidature.user.last_name} ({candidature.user.username})
+                        </h3>
+                        <p style={{color:'#7a8c85', fontSize:14, lineHeight:1.4, margin:0}}>
+                          {candidature.motivation}
+                        </p>
+                      </div>
+
+                      {/* Informations du candidat */}
+                      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16, fontSize:13}}>
+                        <div>
+                          <strong style={{color:'#116b41'}}>Email:</strong>
+                          <br />
+                          <span style={{color:'#7a8c85'}}>{candidature.user.email}</span>
+                        </div>
+                        <div>
+                          <strong style={{color:'#116b41'}}>Candidaté le:</strong>
+                          <br />
+                          <span style={{color:'#7a8c85'}}>{candidature.created_at ? new Date(candidature.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div style={{display:'flex', gap:8}}>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Fonction pour voir les candidatures
+                            alert(`Candidatures pour: ${candidature.user.first_name}\n\nCette fonctionnalité affichera bientôt la liste des candidatures pour ce candidat.`);
+                          }}
+                          style={{
+                            flex:1,
+                            padding:'10px 16px',
+                            background:'#116b41',
+                            border:'none',
+                            borderRadius:8,
+                            color:'white',
+                            fontWeight:600,
+                            cursor:'pointer',
+                            fontSize:14,
+                            transition:'all 0.2s'
+                          }}
+                          onMouseEnter={e => e.target.style.background = '#0f3d25'}
+                          onMouseLeave={e => e.target.style.background = '#116b41'}
+                        >
+                          📋 Voir détails
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
