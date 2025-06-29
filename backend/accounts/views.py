@@ -16,6 +16,8 @@ from .serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
     PasswordChangeSerializer, LoginSerializer, CitySerializer
 )
+from projects.models import Project
+from ratings.models import Rating
 
 
 class CityListView(generics.ListAPIView):
@@ -157,3 +159,124 @@ def user_stats_view(request):
     }
     
     return Response(stats)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_portfolio(request, user_id):
+    """
+    Récupère toutes les données du portfolio d'un utilisateur
+    """
+    try:
+        user = User.objects.get(id=user_id)
+        
+        # Données utilisateur de base
+        user_data = {
+            'id': user.id,
+            'prenom': user.first_name,
+            'nom': user.last_name,
+            'email': user.email,
+            'photo': user.profile_picture.url if user.profile_picture else None,
+            'bio': user.bio,
+            'phone': user.phone,
+            'city': user.city.name if user.city else None,
+            'linkedin_url': user.linkedin_url,
+            'github_url': user.github_url,
+            'portfolio_url': user.portfolio_url,
+            'cv_file': user.cv_file.url if user.cv_file else None,
+            'rating_average': float(user.rating_average),
+            'experience_years': user.experience_years,
+            'total_projects': user.total_projects,
+            'created_at': user.created_at.strftime('%Y-%m-%d'),
+        }
+        
+        # Compétences
+        competences = user.get_skills_list()
+        user_data['competences'] = competences
+        
+        # Langues (convertir la chaîne en liste)
+        langues = []
+        if user.languages:
+            lang_list = [lang.strip() for lang in user.languages.split(',')]
+            for lang in lang_list:
+                langues.append({'nom': lang, 'niveau': 'Intermédiaire'})  # Par défaut
+        user_data['langues'] = langues
+        
+        # Projets créés par l'utilisateur
+        projets = Project.objects.filter(client=user).order_by('-created_at')[:5]  # 5 derniers projets
+        projets_data = []
+        for projet in projets:
+            projet_data = {
+                'id': projet.id,
+                'titre': projet.title,
+                'description': projet.description,
+                'image': projet.main_image.url if projet.main_image else '/img/default-project.png',
+                'budget': float(projet.budget),
+                'duree': f"{projet.duration_days} jours",
+                'statut': projet.status,
+                'date_creation': projet.created_at.strftime('%Y-%m-%d'),
+                'categories': [projet.category.name] if projet.category else [],
+                'candidatures_count': projet.candidatures.count(),
+            }
+            projets_data.append(projet_data)
+        user_data['projets_realises'] = projets_data
+        
+        # Témoignages/Commentaires reçus
+        ratings = Rating.objects.filter(
+            rated_user=user,
+            is_public=True
+        ).select_related('rater', 'project').order_by('-created_at')[:5]  # 5 derniers témoignages
+        
+        commentaires_data = []
+        for rating in ratings:
+            if rating.comment:  # Seulement ceux avec commentaires
+                commentaire_data = {
+                    'id': rating.id,
+                    'auteur': rating.rater.full_name,
+                    'poste': f"Projet : {rating.project.title}",
+                    'commentaire': rating.comment,
+                    'note': rating.score,
+                    'date': rating.created_at.strftime('%Y-%m-%d'),
+                    'avatar': rating.rater.profile_picture.url if rating.rater.profile_picture else '/img/default-avatar.png',
+                    'criteria': {
+                        'communication': rating.communication,
+                        'quality': rating.quality,
+                        'timeliness': rating.timeliness,
+                        'professionalism': rating.professionalism,
+                    }
+                }
+                commentaires_data.append(commentaire_data)
+        user_data['commentaires'] = commentaires_data
+        
+        # Statistiques
+        stats = {
+            'projets_termines': Project.objects.filter(client=user, status='completed').count(),
+            'note_moyenne': float(user.rating_average),
+            'total_evaluations': Rating.objects.filter(rated_user=user).count(),
+            'taux_recommandation': 0
+        }
+        
+        # Calculer le taux de recommandation
+        total_ratings = Rating.objects.filter(rated_user=user).count()
+        if total_ratings > 0:
+            recommended = Rating.objects.filter(rated_user=user, would_recommend=True).count()
+            stats['taux_recommandation'] = round((recommended / total_ratings) * 100, 1)
+        
+        user_data['statistiques'] = stats
+        
+        return Response({
+            'success': True,
+            'message': f'Portfolio de {user.full_name} chargé avec succès',
+            'data': user_data
+        })
+        
+    except User.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Utilisateur non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': f'Erreur lors du chargement du portfolio: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

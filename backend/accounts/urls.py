@@ -24,4 +24,7 @@ urlpatterns = [
     path('users/<int:pk>/update/', views.UserUpdateView.as_view(), name='user_update'),
     path('users/<int:pk>/delete/', views.UserDeleteView.as_view(), name='user_delete'),
     path('stats/', views.user_stats_view, name='user_stats'),
+    
+    # Portfolio endpoint
+    path('portfolio/<int:user_id>/', views.get_user_portfolio, name='user_portfolio'),
 ] 

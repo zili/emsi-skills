@@ -31,14 +31,15 @@ const Demandes = () => {
         },
         {
           id: 2,
-          nom: "Fatima Zahra",
-          prenom: "Fatima",
-          email: "fatima.zahra@emsi.ma",
+          nom: "Zilili",
+          prenom: "Yassine",
+          email: "yassine.zilili@emsi-edu.ma",
           photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600",
-          competences: ["React Native", "Node.js", "UI/UX"],
-          motivation: "Expérience de 2 ans en développement mobile, je souhaite contribuer à ce projet innovant...",
+          competences: [], // Pas de compétences réelles
+          motivation: "Candidature de test",
           date_candidature: "2024-01-17",
-          status: "en_attente"
+          status: "en_attente",
+          utilisateur_id: 10 // ID réel de Yassine Zilili dans la base
         }
       ]
     },

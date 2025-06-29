@@ -12,6 +12,8 @@ class Category(models.Model):
     icon = models.CharField(max_length=50, blank=True)  # Font Awesome icon class
     display_icon = models.CharField(max_length=50, blank=True)  # Alternative icon
     color_theme = models.CharField(max_length=20, blank=True)  # Color theme
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name_plural = "Categories"
@@ -24,6 +26,7 @@ class Category(models.Model):
 class ProjectTag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     color = models.CharField(max_length=7, default='#007bff')  # Hex color
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['name']

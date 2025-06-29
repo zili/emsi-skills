@@ -58,7 +58,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'category_id', 'client', 'owner',
             'assigned_to', 'estimated_duration', 'required_skills', 'skills',
             'required_skills_list', 'status', 'admin_status', 'is_urgent', 'is_featured',
-            'main_image', 'client_photo', 'display_duration', 'display_date', 'technology_used',
+            'main_image', 'client_photo', 'display_duration', 'display_date',
             'deadline', 'start_date', 'completion_date', 'created_at', 'updated_at',
             'views_count', 'applications_count', 'rating_average', 'rating', 'rejection_reason', 
             'approved_by', 'approved_at', 'images', 'image', 'files', 'tags', 'project_reviews'
@@ -133,7 +133,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'category_id',
             'estimated_duration', 'required_skills', 'is_urgent', 'deadline',
-            'main_image', 'display_duration', 'display_date', 'technology_used'
+            'main_image', 'display_duration', 'display_date'
         ]
     
     def validate_category_id(self, value):
@@ -158,7 +158,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'category_id',
             'estimated_duration', 'required_skills', 'is_urgent', 'deadline',
-            'main_image', 'display_duration', 'display_date', 'technology_used'
+            'main_image', 'display_duration', 'display_date'
         ]
     
     def validate_category_id(self, value):
@@ -186,7 +186,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'client',
             'estimated_duration', 'status', 'admin_status', 'is_urgent', 'is_featured',
             'deadline', 'created_at', 'views_count', 'applications_count',
-            'main_image', 'image', 'display_duration', 'display_date', 'technology_used', 'tags'
+            'main_image', 'image', 'display_duration', 'display_date', 'tags'
         ] 
     
     def get_image(self, obj):
