@@ -48,42 +48,76 @@ function Home() {
       <div className="features">
         <div className="container">
           <div className="item">
-            <h1>A whole world of freelance talent at your fingertips</h1>
+            <h1>Votre parcours vers l'excellence professionnelle commence ici</h1>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              The best for every budget
+              Naviguez sur le site facilement
             </div>
             <p>
-              Find high-quality services at every price point. No hourly rates,
-              just project-based pricing.
+              Parcourez notre plateforme intuitive, découvrez les projets disponibles 
+              et trouvez ceux qui correspondent à vos compétences et aspirations.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              Quality work done quickly
+              Choisissez la catégorie qui vous intéresse
             </div>
             <p>
-              Find the right freelancer to begin working on your project within
-              minutes.
+              Explorez nos différentes catégories : Développement, Génie Civil, 
+              Marketing, Design, Bénévolat et bien d'autres pour trouver votre domaine.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              Protected payments, every time
+              Postulez aux projets qui vous passionnent
             </div>
             <p>
-              Always know what you'll pay upfront. Your payment isn't released
-              until you approve the work.
+              Rédigez une candidature convaincante, mettez en avant vos compétences 
+              et commencez à construire votre portfolio professionnel.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              24/7 support
+              Développez votre réseau et vos compétences
             </div>
             <p>
-              Find high-quality services at every price point. No hourly rates,
-              just project-based pricing.
+              Collaborez avec des professionnels EMSI, enrichissez votre CV et 
+              préparez-vous au marché du travail avec des projets concrets.
             </p>
           </div>
           <div className="item">
-            <video src="./img/video.mp4" controls />
+            <div style={{
+              background: 'linear-gradient(135deg, #1dbf73 0%, #116b41 100%)',
+              borderRadius: '20px',
+              padding: '60px 40px',
+              color: 'white',
+              textAlign: 'center',
+              height: '400px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              boxShadow: '0 20px 40px rgba(17, 107, 65, 0.3)'
+            }}>
+              <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', fontWeight: '700' }}>
+                🚀 Lancez votre carrière
+              </h2>
+              <p style={{ fontSize: '1.3rem', marginBottom: '30px', opacity: '0.9' }}>
+                Rejoignez des centaines d'étudiants EMSI qui développent leurs compétences
+              </p>
+              <div style={{ 
+                background: 'rgba(255,255,255,0.1)', 
+                borderRadius: '15px', 
+                padding: '25px',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px' }}>
+                  ✨ Comment commencer ?
+                </h3>
+                <div style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  1. Complétez votre portfolio<br/>
+                  2. Explorez les projets disponibles<br/>
+                  3. Postulez à ceux qui vous intéressent<br/>
+                  4. Collaborez et apprenez !
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

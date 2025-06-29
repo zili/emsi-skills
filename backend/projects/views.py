@@ -266,71 +266,55 @@ def simple_projects_list(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def simple_project_detail(request, pk):
-    """Détail simple d'un projet sans les relations complexes"""
+    """Détail simple d'un projet avec les vraies données de la base"""
     try:
-        # Récupérer le projet directement sans utiliser les relations
-        project = Project.objects.filter(id=pk).values(
-            'id', 'title', 'description', 'estimated_duration',
-            'required_skills', 'created_at'
-        ).first()
+        # Récupérer le projet avec ses relations réelles
+        project = Project.objects.select_related('client', 'category').get(id=pk)
         
-        if not project:
-            return Response({'error': 'Projet introuvable'}, status=404)
+        # Récupérer les vraies données du client
+        client_data = {
+            'full_name': project.client.full_name if project.client else 'Client',
+            'first_name': project.client.first_name if project.client else '',
+            'last_name': project.client.last_name if project.client else '',
+            'email': project.client.email if project.client else '',
+            'username': project.client.username if project.client else '',
+            'profile_picture': project.client.profile_picture.url if project.client and project.client.profile_picture else None
+        }
+        
+        # Récupérer les vraies compétences
+        skills_list = project.get_required_skills_list()
+        tags_data = [{'name': skill} for skill in skills_list] if skills_list else []
+        
+        # Construire l'URL de l'image
+        if project.main_image:
+            image_url = request.build_absolute_uri(project.main_image.url)
+        else:
+            image_url = 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80'
         
         # Transformer en format attendu par le frontend
         project_data = {
-            'id': project['id'],
-            'title': project['title'],
-            'description': project['description'],
-            'category': {'name': 'Développement'},  # Catégorie par défaut
-            'client': {
-                'full_name': 'Client EMSI', 
-                'email': 'client@emsi.ma',
-                'profile_picture': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'
-            },
-            'estimated_duration': project['estimated_duration'] or '2 mois',
-            'display_duration': project['estimated_duration'] or '2 mois',
-            'required_skills': project['required_skills'] or 'React.js, Django, Python',
-            'required_skills_list': (project['required_skills'] or 'React.js, Django, Python').split(','),
-            
-            'created_at': project['created_at'],
-            'display_date': project['created_at'].strftime('%d/%m/%Y') if project['created_at'] else '01/01/2024',
-            'tags': [
-                {'name': skill.strip()} 
-                for skill in (project['required_skills'] or 'React.js, Django, Python').split(',')
-            ],
-            'image': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-            'client_photo': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-            'files': []  # Pas de fichiers pour l'instant
+            'id': project.id,
+            'title': project.title,
+            'description': project.description,
+            'category': project.category.name if project.category else 'Autres',
+            'client': client_data,
+            'estimated_duration': project.estimated_duration or 'Non définie',
+            'display_duration': project.estimated_duration or 'Non définie', 
+            'required_skills': project.required_skills or '',
+            'required_skills_list': skills_list,
+            'created_at': project.created_at.isoformat(),
+            'display_date': project.created_at.strftime('%d/%m/%Y'),
+            'tags': tags_data,
+            'image': image_url,
+            'main_image': image_url,
+            'client_photo': client_data['profile_picture'],
+            'files': []  # À implémenter plus tard si nécessaire
         }
         
         return Response(project_data)
         
+    except Project.DoesNotExist:
+        return Response({'error': 'Projet introuvable'}, status=404)
     except Exception as e:
-        # En cas d'erreur, retourner des données de test
-        return Response({
-            'id': pk,
-            'title': f'Projet Test #{pk}',
-            'description': 'Description détaillée du projet de test pour vérifier le bon fonctionnement de la page de détails.',
-            'category': {'name': 'Développement'},
-            'client': {
-                'full_name': 'Client Test', 
-                'email': 'test@emsi.ma',
-                'profile_picture': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'
-            },
-            'estimated_duration': '1 mois',
-            'display_duration': '1 mois',
-            'required_skills': 'React.js, Django, Test',
-            'required_skills_list': ['React.js', 'Django', 'Test'],
-            
-            'created_at': '2024-06-28T20:00:00Z',
-            'display_date': '28/06/2024',
-            'tags': [
-                {'name': 'React.js'}, 
-                {'name': 'Django'}, 
-                {'name': 'Test'}
-            ],
-            'image': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-            'client_photo': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-            'files': []
-        })
+        print(f"❌ Erreur dans simple_project_detail: {e}")
+        return Response({'error': 'Erreur serveur'}, status=500)

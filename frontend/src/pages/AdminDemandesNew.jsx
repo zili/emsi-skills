@@ -1,37 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminDemandes.scss';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminNavbar from '../components/AdminNavbar';
 
 const AdminDemandes = () => {
-  const mockData = [
-    {
-      id: 1,
-      title: "Développement d'une application mobile",
-      description: "Création d'une application mobile pour la gestion des étudiants",
-      category: "Développement",
-      client: "Ahmed Bennani",
-      estimated_duration: "3 mois",
-      required_skills: "React Native, JavaScript, API REST",
-      status: "pending_approval",
-      created_at: "2024-01-15",
-      is_urgent: true
-    },
-    {
-      id: 2,
-      title: "Design d'interface utilisateur", 
-      description: "Conception d'une interface moderne pour une plateforme e-learning",
-      category: "Design",
-      client: "Fatima Zahra",
-      estimated_duration: "2 mois",
-      required_skills: "UI/UX, Figma, Adobe XD", 
-      status: "pending_approval",
-      created_at: "2024-01-14",
-      is_urgent: false
-    }
-  ];
+  const [demandes, setDemandes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [demandes] = useState(mockData);
+  useEffect(() => {
+    const fetchPendingProjects = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          setError('Vous devez être connecté');
+          return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/projects/admin/pending/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setDemandes(data.results || data || []);
+        } else {
+          setError('Erreur lors du chargement des demandes');
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des demandes:', error);
+        setError('Erreur lors du chargement des demandes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPendingProjects();
+  }, []);
 
   return (
     <div className="admin-layout-pro projets-layout">

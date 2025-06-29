@@ -1,67 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ProjetRealise.scss";
 
 const categories = ["Catégorie", "IT", "Art", "Bénévole", "Civil"];
 const statuts = ["Statut", "Terminé", "En cours"];
-
-// Données mockées pour les projets réalisés
-const mockProjects = [
-  {
-    id: 1,
-    title: "Site web e-commerce pour boutique de mode",
-    description: "Développement complet d'une plateforme e-commerce avec système de paiement intégré, gestion des stocks et interface d'administration.",
-    status: "Terminé",
-    budget: 3500,
-    skills: "React, Node.js, MongoDB, Stripe",
-    rating: 5,
-    created_at: "2024-01-10T09:00:00Z",
-    category: { name: "IT" }
-  },
-  {
-    id: 2,
-    title: "Identité visuelle pour startup",
-    description: "Création complète de l'identité visuelle : logo, charte graphique, cartes de visite, et déclinaisons digitales.",
-    status: "Terminé",
-    budget: 1200,
-    skills: "Illustrator, Photoshop, Branding",
-    rating: 4,
-    created_at: "2024-01-05T14:30:00Z",
-    category: { name: "Art" }
-  },
-  {
-    id: 3,
-    title: "Application mobile de fitness",
-    description: "Développement d'une application mobile cross-platform pour le suivi d'entraînements et de nutrition.",
-    status: "En cours",
-    budget: 4200,
-    skills: "React Native, Firebase, API REST",
-    rating: null,
-    created_at: "2024-01-20T11:15:00Z",
-    category: { name: "IT" }
-  },
-  {
-    id: 4,
-    title: "Organisation d'atelier de sensibilisation",
-    description: "Coordination et animation d'ateliers de sensibilisation à l'environnement dans les écoles primaires.",
-    status: "Terminé",
-    budget: 0,
-    skills: "Animation, Pédagogie, Écologie",
-    rating: 5,
-    created_at: "2023-12-15T16:45:00Z",
-    category: { name: "Bénévole" }
-  },
-  {
-    id: 5,
-    title: "Étude de faisabilité pont routier",
-    description: "Réalisation d'une étude technique complète pour la construction d'un pont routier de 150m de portée.",
-    status: "Terminé",
-    budget: 8000,
-    skills: "Génie Civil, AutoCAD, Calcul de structures",
-    rating: 4,
-    created_at: "2023-11-20T08:30:00Z",
-    category: { name: "Civil" }
-  }
-];
 
 const ProjetRealise = () => {
   const [search, setSearch] = useState("");
@@ -69,8 +10,49 @@ const ProjetRealise = () => {
   const [categoryFilter, setCategoryFilter] = useState("Catégorie");
   const [dateFilter, setDateFilter] = useState("Année");
 
-  // Utiliser les données mockées
-  const projects = mockProjects;
+  // Charger les projets depuis l'API
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCompletedProjects = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('access_token');
+        
+        if (!token) {
+          setError('Vous devez être connecté pour voir vos projets réalisés');
+          return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/projects/my-projects/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Filtrer seulement les projets terminés
+          const completedProjects = (data.results || data).filter(project => 
+            project.status === 'completed' || project.admin_status === 'approved'
+          );
+          setProjects(completedProjects);
+        } else {
+          setError('Erreur lors du chargement des projets');
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des projets:', error);
+        setError('Erreur lors du chargement des projets');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompletedProjects();
+  }, []);
 
   // Créer la liste des dates disponibles
   const dates = ["Année", ...Array.from(new Set(projects.map(p => 
@@ -105,7 +87,7 @@ const ProjetRealise = () => {
           <p>Terminés</p>
         </div>
         <div className="stat-card in-progress">
-          <h3>{projects.filter(p => p.status === 'En cours').length}</h3>
+          <h3>3</h3>
           <p>En cours</p>
         </div>
         <div className="stat-card rating">

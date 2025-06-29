@@ -48,38 +48,38 @@ function AccueilStaffClub() {
       <div className="features">
         <div className="container">
           <div className="item">
-            <h1>A whole world of freelance talent at your fingertips</h1>
+            <h1>Acceptez le profil qui correspond à vos besoins</h1>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              The best for every budget
+              Évaluez les candidatures facilement
             </div>
             <p>
-              Find high-quality services at every price point. No hourly rates,
-              just project-based pricing.
+              Consultez les profils des candidats, examinez leurs compétences 
+              et choisissez celui qui correspond le mieux à votre projet.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              Quality work done quickly
+              Sélectionnez les meilleurs talents
             </div>
             <p>
-              Find the right freelancer to begin working on your project within
-              minutes.
+              Parcourez les candidatures d'étudiants motivés et trouvez 
+              le partenaire idéal pour concrétiser vos idées en quelques clics.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              Protected payments, every time
+              Collaboration sécurisée garantie
             </div>
             <p>
-              Always know what you'll pay upfront. Your payment isn't released
-              until you approve the work.
+              Bénéficiez d'un environnement de travail encadré par EMSI 
+              avec un suivi des projets et une communication facilitée.
             </p>
             <div className="title">
               <img src="./img/check.png" alt="" />
-              24/7 support
+              Accompagnement personnalisé
             </div>
             <p>
-              Find high-quality services at every price point. No hourly rates,
-              just project-based pricing.
+              Profitez du support de notre plateforme pour gérer vos projets 
+              et développer des collaborations fructueuses avec nos étudiants.
             </p>
           </div>
           <div className="item">

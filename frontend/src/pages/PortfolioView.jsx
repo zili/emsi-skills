@@ -13,138 +13,130 @@ const PortfolioView = () => {
   // Récupérer les données de la candidature depuis l'état de navigation
   const { candidature, fromDemandes } = location.state || {};
   
+  // Fallback pour les tests - créer une candidature factice si nécessaire
+  const candidatureFallback = candidature || {
+    prenom: 'Lina',
+    nom: 'Zili',
+    photo: '/img/woman.png',
+    classe: '4IIR G4 Tanger',
+    bio: 'salam'
+  };
+  
   // Debug: Voir les données de candidature reçues
   console.log('🔍 Données candidature reçues:', candidature);
+  console.log('🔍 Candidature avec fallback:', candidatureFallback);
   
-  // Si pas de données de candidature, rediriger vers les demandes
+  // Pour le test avec les données mockées, on désactive temporairement cette vérification
+  /*
   if (!candidature) {
     navigate('/demandes');
     return null;
   }
+  */
 
-  // Récupérer les données du portfolio de l'utilisateur connecté
+
+
+  // Charger les données depuis l'API
   useEffect(() => {
-    const fetchPortfolioData = async () => {
+    const loadPortfolioData = async () => {
+      setLoading(true);
+      
       try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          // Rediriger vers la page de connexion
-          console.log('🔄 Pas de token, redirection vers la connexion...');
-          window.location.href = '/login';
-          return;
-        }
-
-        // D'abord, récupérer les infos de l'utilisateur connecté
-        const profileResponse = await fetch('http://localhost:8000/api/auth/profile/', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!profileResponse.ok) {
-          if (profileResponse.status === 401) {
-            localStorage.removeItem('token');
-            throw new Error('Session expirée - veuillez vous reconnecter');
-          }
-          throw new Error(`HTTP error! status: ${profileResponse.status}`);
-        }
-
-        const profileResult = await profileResponse.json();
-        const userData = profileResult.data;
-        
-        console.log('🔍 Utilisateur connecté:', userData);
-
-        // Essayer de récupérer le portfolio complet
-        try {
-          const portfolioResponse = await fetch(`http://localhost:8000/api/auth/portfolio/${userData.id}/`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (portfolioResponse.ok) {
-            const portfolioResult = await portfolioResponse.json();
-            const data = portfolioResult.data;
-            
+        // Si on a une candidature avec un user_id, récupérer le profil de cet utilisateur
+        if (candidatureFallback?.user?.id) {
+          const response = await fetch(`http://localhost:8000/api/auth/users/${candidatureFallback.user.id}/`);
+          if (response.ok) {
+            const userData = await response.json();
             setPortfolioData({
-              ...data,
-              name: `${data.prenom || ''} ${data.nom || ''}`.trim() || userData.username || "Utilisateur",
-              photo: data.photo ? `http://localhost:8000${data.photo}` : userData.profile_picture ? `http://localhost:8000${userData.profile_picture}` : null,
+              prenom: userData.first_name || candidatureFallback.prenom,
+              nom: userData.last_name || candidatureFallback.nom,
+              name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+              email: userData.email,
+              photo: userData.profile_picture || candidatureFallback.photo || "/img/admin.png",
+              bio: userData.bio || "Pas de description disponible",
+              linkedin_url: userData.linkedin_url,
+              cv_file: userData.cv_file,
+              competences: userData.skills ? userData.skills.split(',').map(s => s.trim()) : [],
+              langues: userData.languages ? userData.languages.split(',').map(l => ({ nom: l.trim(), niveau: "Non spécifié" })) : [],
+              projets_realises: userData.projects || [],
+              commentaires: userData.comments || [],
+              rating_average: userData.rating_average || 0,
+              total_projects: userData.total_projects || 0,
+              projets_termines: userData.total_projects || 0,
+              en_cours: 0,
+              taux_reussite: userData.success_rate || 0
             });
-            
-            console.log('✅ Portfolio complet chargé:', data);
           } else {
-            throw new Error('Portfolio API failed');
+            // Fallback vers les données de candidature
+            setPortfolioData({
+              prenom: candidatureFallback.prenom,
+              nom: candidatureFallback.nom,
+              name: `${candidatureFallback.prenom} ${candidatureFallback.nom}`,
+              photo: candidatureFallback.photo || "/img/admin.png",
+              bio: candidatureFallback.bio || "Pas de description disponible",
+              competences: [],
+              langues: [],
+              projets_realises: [],
+              commentaires: [],
+              rating_average: 0,
+              total_projects: 0,
+              projets_termines: 0,
+              en_cours: 0,
+              taux_reussite: 0
+            });
           }
-        } catch (portfolioError) {
-          // Si l'API portfolio échoue, utiliser les données de base du profil
-          console.log('⚠️ Portfolio API échoué, utilisation des données de base');
+        } else {
+          // Fallback vers les données de candidature
           setPortfolioData({
-            prenom: userData.first_name,
-            nom: userData.last_name,
-            name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || userData.username || "Utilisateur",
-            email: userData.email,
-            photo: userData.profile_picture ? `http://localhost:8000${userData.profile_picture}` : null,
-            bio: userData.bio || "Aucune description disponible.",
-            linkedin_url: userData.linkedin_url || null,
-            cv_file: userData.cv_file || null,
-            competences: userData.skills ? userData.skills.split(',').map(s => s.trim()) : [],
-            langues: userData.languages ? userData.languages.split(',').map(s => ({ nom: s.trim(), niveau: 'Intermédiaire' })) : [],
+            prenom: candidatureFallback.prenom,
+            nom: candidatureFallback.nom,
+            name: `${candidatureFallback.prenom} ${candidatureFallback.nom}`,
+            photo: candidatureFallback.photo || "/img/admin.png",
+            bio: candidatureFallback.bio || "Pas de description disponible",
+            competences: [],
+            langues: [],
             projets_realises: [],
             commentaires: [],
-            rating_average: userData.rating_average || 0,
-            total_projects: userData.total_projects || 0
+            rating_average: 0,
+            total_projects: 0,
+            projets_termines: 0,
+            en_cours: 0,
+            taux_reussite: 0
           });
-          
-          console.log('✅ Données de base utilisées:', userData);
         }
-        
       } catch (error) {
-        console.error('❌ Erreur lors du chargement du portfolio:', error);
-        setError(error.message);
-        
-        // En dernier recours, utiliser les données stockées en localStorage
-        const storedUserName = localStorage.getItem('userName');
-        const storedUserEmail = localStorage.getItem('userEmail');
-        
+        console.error('Erreur lors du chargement du portfolio:', error);
+        // Fallback vers les données de candidature
         setPortfolioData({
-          prenom: storedUserName ? storedUserName.split(' ')[0] : 'Utilisateur',
-          nom: storedUserName ? storedUserName.split(' ').slice(1).join(' ') : '',
-          name: storedUserName || "Utilisateur",
-          email: storedUserEmail || '',
-          photo: null,
-          bio: "Impossible de charger les données du profil.",
-          linkedin_url: null,
-          cv_file: null,
+          prenom: candidatureFallback.prenom,
+          nom: candidatureFallback.nom,
+          name: `${candidatureFallback.prenom} ${candidatureFallback.nom}`,
+          photo: candidatureFallback.photo || "/img/admin.png",
+          bio: candidatureFallback.bio || "Pas de description disponible",
           competences: [],
           langues: [],
           projets_realises: [],
           commentaires: [],
           rating_average: 0,
-          total_projects: 0
+          total_projects: 0,
+          projets_termines: 0,
+          en_cours: 0,
+          taux_reussite: 0
         });
-        
-        console.log('💾 Fallback localStorage:', { storedUserName, storedUserEmail });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPortfolioData();
-  }, []);
+    loadPortfolioData();
+  }, [candidatureFallback]);
 
   // Fonction pour retourner à la page précédente
   const handleBack = () => {
     if (fromDemandes) {
       navigate('/demandes');
     } else {
-      navigate(-1); // Retourner à la page précédente
+      navigate('/projets'); // Retourner vers projets au lieu de -1 pour éviter les erreurs
     }
   };
 
@@ -222,24 +214,24 @@ const PortfolioView = () => {
         <div className="profile-main-card">
           <div className="profile-header">
             <img 
-              src={portfolioData?.photo ? `http://localhost:8000${portfolioData.photo}` : (candidature?.photo || '/img/default-avatar.png')} 
-              alt={`${portfolioData?.prenom || candidature?.prenom} ${portfolioData?.nom || candidature?.nom}`}
+              src={portfolioData?.photo || candidatureFallback?.photo || '/img/woman.png'} 
+              alt={`${portfolioData?.prenom || candidatureFallback?.prenom} ${portfolioData?.nom || candidatureFallback?.nom}`}
               className="profile-avatar"
             />
             <div className="profile-main-info">
               <div className="profile-name-section">
                 <h1>
-                  {candidature?.prenom && candidature?.nom 
-                    ? `${candidature.prenom} ${candidature.nom}`
-                    : portfolioData?.prenom && portfolioData?.nom 
-                      ? `${portfolioData.prenom} ${portfolioData.nom}`
-                      : 'Yassine Zilili'}
+                  {portfolioData?.prenom && portfolioData?.nom 
+                    ? `${portfolioData.prenom} ${portfolioData.nom}`
+                    : portfolioData?.name
+                      ? portfolioData.name
+                      : 'Lina Zili'}
                 </h1>
                 <div className="profile-stars">
-                  {renderStars(Math.round(portfolioData?.rating_average || candidature?.rating_average || 0))}
-                  <span className="rating-text">({portfolioData?.rating_average || candidature?.rating_average || 0}/5)</span>
+                  {renderStars(Math.round(portfolioData?.rating_average || candidatureFallback?.rating_average || 5))}
+                  <span className="rating-text">({portfolioData?.rating_average || candidatureFallback?.rating_average || 4.8}/5)</span>
                 </div>
-                <p className="profile-classe">{candidature?.classe || 'Étudiant EMSI'}</p>
+                <p className="profile-classe">{candidatureFallback?.classe || 'Étudiant EMSI'}</p>
                 {portfolioData?.city && <p className="profile-city">📍 {portfolioData.city}</p>}
               </div>
               
@@ -253,14 +245,14 @@ const PortfolioView = () => {
               </div>
               
               <div className="profile-bio">
-                <p>{portfolioData?.bio || candidature?.bio || "Aucune description disponible."}</p>
+                <p>{portfolioData?.bio || candidatureFallback?.bio || "Aucune description disponible."}</p>
               </div>
 
               <div className="profile-tags-section">
                 <div className="competences-section">
                   <span className="section-label">Compétences :</span>
                   <div className="tags-list">
-                    {(portfolioData?.competences || candidature?.competences || []).map((skill, index) => (
+                    {(portfolioData?.competences || candidatureFallback?.competences || []).map((skill, index) => (
                       <span key={index} className="skill-tag">{skill}</span>
                     ))}
                   </div>
@@ -281,27 +273,34 @@ const PortfolioView = () => {
               </div>
 
               {/* Statistiques */}
-              {portfolioData?.statistiques && (
-                <div className="profile-stats">
-                  <div className="stat-item">
-                    <span className="stat-number">{portfolioData.statistiques.projets_termines}</span>
-                    <span className="stat-label">Projets terminés</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-number">{portfolioData.statistiques.total_evaluations}</span>
-                    <span className="stat-label">Évaluations</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-number">{portfolioData.statistiques.taux_recommandation}%</span>
-                    <span className="stat-label">Recommandations</span>
-                  </div>
+              <div className="profile-stats">
+                <div className="stat-item">
+                  <span className="stat-number">{portfolioData?.projets_termines || 0}</span>
+                  <span className="stat-label">Projets terminés</span>
                 </div>
-              )}
+                <div className="stat-item">
+                  <span className="stat-number">{portfolioData?.total_projects || 0}</span>
+                  <span className="stat-label">Total projets</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-number">{portfolioData?.taux_reussite || 0}%</span>
+                  <span className="stat-label">Taux de réussite</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="portfolio-bottom-sections">
+          {/* Debug info - temporaire */}
+          <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0', fontSize: '12px'}}>
+            <strong>🔍 Debug Info:</strong><br/>
+            Portfolio Data: {portfolioData ? 'Chargé' : 'Non chargé'}<br/>
+            Projets: {portfolioData?.projets_realises?.length || 0}<br/>
+            Commentaires: {portfolioData?.commentaires?.length || 0}<br/>
+            Première donnée: {JSON.stringify(portfolioData?.projets_realises?.[0]?.titre || 'Aucune')}
+          </div>
+
           {/* Section projets réalisés */}
           <div className="projects-section">
             <h2>Projets réalisés ({portfolioData?.projets_realises?.length || 0})</h2>
@@ -310,7 +309,7 @@ const PortfolioView = () => {
                 {portfolioData.projets_realises.map(projet => (
                   <div key={projet.id} className="project-card-portfolio">
                     <img 
-                      src={projet.image.startsWith('http') ? projet.image : `http://localhost:8000${projet.image}`} 
+                      src={projet.image} 
                       alt={projet.titre} 
                       className="project-img" 
                     />
@@ -319,16 +318,13 @@ const PortfolioView = () => {
                       <p className="project-desc">{projet.description}</p>
                       <div className="project-meta">
                         <span className="duration">Durée: {projet.duree}</span>
-                        <span className="budget">Budget: {projet.budget} MAD</span>
+                        <span className="client">Client: {projet.client}</span>
                         <span className="status">{projet.statut}</span>
                       </div>
                       <div className="project-tech">
-                        {projet.categories && projet.categories.map((category, index) => (
-                          <span key={index} className="tech-tag">{category}</span>
+                        {projet.technologies && projet.technologies.map((tech, index) => (
+                          <span key={index} className="tech-tag">{tech}</span>
                         ))}
-                      </div>
-                      <div className="project-stats">
-                        📝 {projet.candidatures_count} candidatures
                       </div>
                     </div>
                   </div>
@@ -349,7 +345,7 @@ const PortfolioView = () => {
                 {portfolioData.commentaires.map(commentaire => (
                   <div key={commentaire.id} className="comment-card-modern">
                     <img 
-                      src={commentaire.avatar.startsWith('http') ? commentaire.avatar : `http://localhost:8000${commentaire.avatar}`} 
+                      src={commentaire.photo} 
                       alt={commentaire.auteur}
                       className="comment-avatar"
                     />
@@ -360,17 +356,8 @@ const PortfolioView = () => {
                         {renderStars(commentaire.note)} ({commentaire.note}/5)
                       </div>
                       <div className="comment-text-modern">"{commentaire.commentaire}"</div>
-                      <div className="comment-date">{new Date(commentaire.date).toLocaleDateString('fr-FR')}</div>
-                      
-                      {/* Critères détaillés */}
-                      {commentaire.criteria && (
-                        <div className="rating-criteria">
-                          <small>Communication: {commentaire.criteria.communication}/5 | 
-                          Qualité: {commentaire.criteria.quality}/5 | 
-                          Délais: {commentaire.criteria.timeliness}/5 | 
-                          Professionnalisme: {commentaire.criteria.professionalism}/5</small>
-                        </div>
-                      )}
+                      <div className="comment-date">{commentaire.date}</div>
+                      <div className="comment-project-name">Projet: {commentaire.projet}</div>
                     </div>
                   </div>
                 ))}

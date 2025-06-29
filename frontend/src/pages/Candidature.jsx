@@ -158,10 +158,7 @@ const mockCandidatures = [
     } catch (error) {
       console.error('❌ Erreur lors de la récupération des candidatures:', error);
       setError(error.message);
-      
-      // En cas d'erreur, utiliser les données mockées comme fallback
-      console.log('⚠️ Utilisation des données mockées comme fallback');
-      setCandidatures(mockCandidatures);
+      setCandidatures([]);
       setLoading(false);
     }
   };
@@ -185,16 +182,7 @@ const mockCandidatures = [
       
     } catch (error) {
       console.error('❌ Erreur lors du retrait de la candidature:', error);
-      
-             // Simulation locale en cas d'erreur API (pour les données mockées)
-       if (error.message.includes('401') || error.message.includes('token')) {
-         console.log('⚠️ Simulation du retrait pour les données mockées');
-         const updatedCandidatures = (candidatures || []).filter(c => c.id !== candidatureId);
-         setCandidatures(updatedCandidatures);
-         alert('Candidature retirée avec succès (simulation)');
-       } else {
-         alert('❌ Erreur lors du retrait de la candidature. Veuillez réessayer.');
-       }
+      alert('❌ Erreur lors du retrait de la candidature. Veuillez réessayer.');
     }
   };
 

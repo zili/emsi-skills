@@ -27,10 +27,10 @@ function Featured() {
           </div>
           <div className="popular">
             <span>Populaire :</span>
-            <button onClick={() => handlePopularClick('Web Design')}>Web Design</button>
-            <button onClick={() => handlePopularClick('WordPress')}>WordPress</button>
-            <button onClick={() => handlePopularClick('Logo Design')}>Logo Design</button>
-            <button onClick={() => handlePopularClick('AI Services')}>AI Services</button>
+            <button onClick={() => handlePopularClick('développement')}>Développement</button>
+            <button onClick={() => handlePopularClick('industrielle')}>Industrielle</button>
+            <button onClick={() => handlePopularClick('bénévolat')}>Bénévolat</button>
+            <button onClick={() => handlePopularClick('art')}>Art</button>
           </div>
         </div>
         <div className="right">

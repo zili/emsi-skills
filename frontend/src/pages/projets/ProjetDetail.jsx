@@ -33,6 +33,26 @@ const ProjetDetail = () => {
     return !!getAuthToken();
   };
 
+  // Fonction pour obtenir la photo du client avec logique spéciale pour Lions Tanger
+  const getClientPhoto = (client) => {
+    if (!client) {
+      return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80';
+    }
+    
+    // Logique spéciale pour Lions Tanger
+    const clientName = client.full_name || 
+      (client.first_name && client.last_name ? `${client.first_name} ${client.last_name}` : '') ||
+      client.email || '';
+    
+    if (clientName.toLowerCase().includes('lions') && clientName.toLowerCase().includes('tanger')) {
+      return '/img/lionss.jpg';
+    }
+    
+    // Retourner la photo de profil si elle existe, sinon une image par défaut
+    return client.profile_picture || 
+           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80';
+  };
+
   // Fonction pour récupérer les détails du projet depuis l'API
   const fetchProjetDetail = async () => {
     setLoading(true);
@@ -55,12 +75,14 @@ const ProjetDetail = () => {
       const transformedProjet = {
         id: data.id,
         nom: data.title,
-        categorie: data.category?.name || 'Autres',
-        image: data.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
-        tags: data.required_skills ? data.required_skills.split(',').map(s => s.trim()) : ['Marketing digital', 'Réseaux sociaux', 'Communication'],
+        categorie: data.category || 'Autres',
+        image: data.image || data.main_image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80',
+        tags: data.tags ? data.tags.map(tag => tag.name) : (data.required_skills ? data.required_skills.split(',').map(s => s.trim()) : ['Non spécifié']),
         description: data.description,
-        client: data.client?.full_name || data.client?.email || 'Client anonyme',
-        clientPhoto: data.client?.profile_picture || data.client_photo || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
+        client: data.client?.full_name || (data.client?.first_name && data.client?.last_name ? 
+          `${data.client.first_name} ${data.client.last_name}` : 
+          data.client?.email || 'Client anonyme'),
+        clientPhoto: getClientPhoto(data.client),
         date: data.display_date || new Date(data.created_at).toLocaleDateString('fr-FR'),
         duree: data.display_duration || data.estimated_duration || 'Non spécifiée',
         fichiers: data.files?.map(file => ({
@@ -360,18 +382,7 @@ const ProjetDetail = () => {
                 </button>
               )}
               
-              {/* Indicateur de connexion au backend */}
-              <div style={{ 
-                marginTop: '20px', 
-                fontSize: '0.9rem', 
-                color: '#666',
-                background: '#f8f9fa',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #e9ecef'
-              }}>
-                Connecté au serveur - Projet #{projet.id}
-              </div>
+
             </div>
           </div>
         </div>

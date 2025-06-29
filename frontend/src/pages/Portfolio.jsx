@@ -57,6 +57,7 @@ const Portfolio = () => {
           }
         };
         
+        console.log('📊 Données utilisées: API réelles');
         setProfileData(adaptedData);
         
         // Initialiser le formulaire d'édition

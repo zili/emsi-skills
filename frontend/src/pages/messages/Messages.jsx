@@ -1,58 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useUsers } from "../../hooks/useApi";
 import "./Messages.scss";
 
-// Données mockées pour la démo
-const mockUsers = [
-  {
-    id: 1,
-    username: "fikri",
-    first_name: "Fikri",
-    last_name: "Hadwin",
-    profile_picture: "https://images.pexels.com/photos/1152994/pexels-photo-1152994.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    titreprojet: "Projet Leapdash", 
-    lastMessage: "Hi Mattie! Please check out this document..."
-  },
-  {
-    id: 2,
-    username: "alice",
-    first_name: "Alice",
-    last_name: "Smith",
-    profile_picture: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    titreprojet: "Projet Mobile App",
-    lastMessage: "The design mockups are ready for review"
-  },
-  {
-    id: 3,
-    username: "warren",
-    first_name: "Warren",
-    last_name: "Butler",
-    profile_picture: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    titreprojet: "Projet E-commerce",
-    lastMessage: "Need to discuss the payment integration"
-  },
-  {
-    id: 4,
-    username: "elnora",
-    first_name: "Elnora",
-    last_name: "Webb",
-    profile_picture: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    titreprojet: "Projet CRM System", 
-    lastMessage: "Database schema has been finalized"
-  },
-  {
-    id: 5,
-    username: "jay",
-    first_name: "Jay",
-    last_name: "Silva",
-    profile_picture: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    titreprojet: "Projet Data Analysis",
-    lastMessage: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-  }
-];
-
 const Messages = () => {
-  const [selectedUser, setSelectedUser] = useState(mockUsers[0]); // Sélectionner le premier utilisateur par défaut
+  const [selectedUser, setSelectedUser] = useState(null); // Sera défini quand les données sont chargées
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -60,8 +10,45 @@ const Messages = () => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
 
-  // Utiliser les données mockées
-  const users = mockUsers;
+  // Charger les vraies données depuis l'API
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+
+        const response = await fetch('http://localhost:8000/api/messages/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const usersData = data.results || data || [];
+          setUsers(usersData);
+          // Sélectionner le premier utilisateur par défaut s'il y en a
+          if (usersData.length > 0) {
+            setSelectedUser(usersData[0]);
+          }
+        } else {
+          // Fallback vers un tableau vide si aucune conversation
+          setUsers([]);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des messages:', error);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   // Messages mockés pour correspondre à l'image
   const mockMessages = {

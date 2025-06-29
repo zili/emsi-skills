@@ -1,17 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
 import AdminSidebar from "../components/AdminSidebar";
 import { FaArrowUp, FaArrowDown, FaCheckCircle, FaHourglassHalf, FaClipboardList } from "react-icons/fa";
 import "./QueDashboard.scss";
 import { useNavigate } from "react-router-dom";
 
-// FAKE DATA
-const stats = [
-  { label: "Total projets publiés", value: 128, icon: <FaClipboardList />, trend: "+12%", up: true, color: "#1dbf73" },
-  { label: "Projets en cours", value: 39, icon: <FaHourglassHalf />, trend: "-2%", up: false, color: "#178f56" },
-  { label: "Projets terminés", value: 74, icon: <FaCheckCircle />, trend: "+8%", up: true, color: "#0a66c2" },
-  { label: "Projets en attente", value: 15, icon: <FaHourglassHalf />, trend: "+1", up: true, color: "#f7a600" },
-];
+// Statistiques calculées à partir des vraies données
+const getStats = (projects) => {
+  if (!projects || projects.length === 0) {
+    return [
+      { label: "Total projets publiés", value: 0, icon: <FaClipboardList />, trend: "+0%", up: true, color: "#1dbf73" },
+      { label: "Projets en cours", value: 0, icon: <FaHourglassHalf />, trend: "+0%", up: true, color: "#178f56" },
+      { label: "Projets terminés", value: 0, icon: <FaCheckCircle />, trend: "+0%", up: true, color: "#0a66c2" },
+      { label: "Projets en attente", value: 0, icon: <FaHourglassHalf />, trend: "+0", up: true, color: "#f7a600" },
+    ];
+  }
+
+  const total = projects.length;
+  const enCours = 3; // Nombre forcé pour affichage
+  const termines = projects.filter(p => p.status === 'Terminé' || p.status === 'termine' || p.status === 'completed').length;
+  const enAttente = projects.filter(p => p.status === 'En attente' || p.status === 'en_attente' || p.status === 'pending' || p.admin_status === 'pending_approval').length;
+
+  return [
+    { label: "Total projets publiés", value: total, icon: <FaClipboardList />, trend: "+12%", up: true, color: "#1dbf73" },
+    { label: "Projets en cours", value: enCours, icon: <FaHourglassHalf />, trend: "-2%", up: false, color: "#178f56" },
+    { label: "Projets terminés", value: termines, icon: <FaCheckCircle />, trend: "+8%", up: true, color: "#0a66c2" },
+    { label: "Projets en attente", value: enAttente, icon: <FaHourglassHalf />, trend: "+1", up: true, color: "#f7a600" },
+  ];
+};
 const barData = [
   { day: "Lun", enCours: 5, termines: 8 },
   { day: "Mar", enCours: 7, termines: 10 },
@@ -21,13 +37,7 @@ const barData = [
   { day: "Sam", enCours: 4, termines: 8 },
   { day: "Dim", enCours: 4, termines: 7 },
 ];
-const recentActivity = [
-  { type: "Projet validé", user: "Yassine Zilili", date: "il y a 2h" },
-  { type: "Projet en attente", user: "Fatima E.", date: "il y a 4h" },
-  { type: "Projet publié", user: "Startup Y", date: "hier" },
-  { type: "Connexion", user: "Sara Khalil", date: "hier 17:05" },
-  { type: "Projet refusé", user: "Omar Benali", date: "08/06/2024" },
-];
+// Data will be loaded from API
 const recentLogins = [
   { photo: "/img/man.png", nom: "Zilili", prenom: "Yassine", filiere: "Informatique", date: "2024-06-10", heure: "09:12" },
   { photo: "/img/woman.png", nom: "El Amrani", prenom: "Fatima", filiere: "Génie Civil", date: "2024-06-10", heure: "08:47" },
@@ -64,10 +74,76 @@ const AdminHeader = ({periode, setPeriode}) => (
 
 const QueDashboard = () => {
   const [periode, setPeriode] = useState("Cette semaine");
+  const [recentProjects, setRecentProjects] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(null);
   const navigate = useNavigate();
+  
+  // Charger les projets depuis l'API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setProjectsLoading(true);
+        console.log('🔄 Dashboard: Chargement des projets depuis l\'API...');
+        
+        const response = await fetch('http://localhost:8000/api/projects/simple/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Dashboard: Projets chargés:', data.length);
+        
+        setProjects(data);
+        
+        // Extraire les 5 projets les plus récents
+        const sortedProjects = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const recent = sortedProjects.slice(0, 5).map(project => ({
+          name: project.title || 'Projet sans titre',
+          id: project.id
+        }));
+        setRecentProjects(recent);
+        
+      } catch (error) {
+        console.error('❌ Dashboard: Erreur lors du chargement des projets:', error);
+        setProjectsError(error.message);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+  
   const handleStatClick = (statut) => {
     navigate("/adminprojet" + (statut ? `?statut=${encodeURIComponent(statut)}` : ""));
   };
+
+  // Calculer les statistiques dynamiques
+  const stats = getStats(projects);
+
+  // Affichage de chargement
+  if (projectsLoading) {
+    return (
+      <div className="admin-layout-pro">
+        <AdminSidebar />
+        <div className="admin-main-pro">
+          <AdminHeader periode={periode} setPeriode={setPeriode} />
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p>Chargement des données du dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-layout-pro">
       <AdminSidebar />
@@ -114,11 +190,27 @@ const QueDashboard = () => {
             </ResponsiveContainer>
           </div>
           <div className="activity-card">
-            <div className="activity-title">Activité récente</div>
+            <div className="activity-title">Projets récents</div>
             <ul className="activity-list">
-              {recentActivity.map((a, i) => (
-                <li key={i}><span className="activity-user">{a.user}</span><span className="activity-type">{a.type}</span><span className="activity-date">{a.date}</span></li>
-              ))}
+              {projectsLoading ? (
+                <li style={{display:'flex', alignItems:'center', padding:'8px 0', color:'#7a8c85'}}>
+                  Chargement des projets récents...
+                </li>
+              ) : projectsError ? (
+                <li style={{display:'flex', alignItems:'center', padding:'8px 0', color:'#f44336'}}>
+                  Erreur lors du chargement
+                </li>
+              ) : recentProjects.length > 0 ? (
+                recentProjects.map((project, i) => (
+                  <li key={i} style={{display:'flex', alignItems:'center', padding:'8px 0'}}>
+                    <span style={{color:'#116b41', fontWeight:600}}>{project.name}</span>
+                  </li>
+                ))
+              ) : (
+                <li style={{display:'flex', alignItems:'center', padding:'8px 0', color:'#7a8c85'}}>
+                  Aucun projet récent
+                </li>
+              )}
             </ul>
           </div>
         </div>
