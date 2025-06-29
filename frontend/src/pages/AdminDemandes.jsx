@@ -9,92 +9,143 @@ const AdminDemandes = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
 
-  // Données mockées pour les projets avec candidatures
-  const mockProjects = [
-    {
-      id: 1,
-      title: "Développement d'une application mobile",
-      description: "Création d'une application mobile pour la gestion des étudiants avec React Native",
-      image: "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "Développement" },
-      owner: { first_name: "Ahmed", last_name: "Bennani", username: "abennani", email: "ahmed.bennani@emsi-edu.ma" },
-      skills: ["React Native", "JavaScript", "TypeScript", "Redux", "API REST"],
-      created_at: "2024-01-15T10:00:00Z",
-      status: "En attente",
-      candidatures_count: 12
-    },
-    {
-      id: 2,
-      title: "Design d'interface utilisateur",
-      description: "Conception d'une interface moderne pour une plateforme e-learning avec Figma",
-      image: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "Design" },
-      owner: { first_name: "Fatima", last_name: "Zahra", username: "fzahra", email: "fatima.zahra@emsi-edu.ma" },
-      skills: ["Figma", "Adobe XD", "UI/UX Design", "Prototyping", "User Research"],
-      created_at: "2024-01-14T15:30:00Z", 
-      status: "Approuvé",
-      candidatures_count: 8
-    },
-    {
-      id: 3,
-      title: "Système de gestion des stocks",
-      description: "Développement d'un système complet de gestion des stocks pour une entreprise",
-      image: "https://images.pexels.com/photos/586103/pexels-photo-586103.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "Informatique" },
-      owner: { first_name: "Omar", last_name: "Benali", username: "obenali", email: "omar.benali@emsi-edu.ma" },
-      skills: ["Java", "Spring Boot", "MySQL", "Angular", "API REST"],
-      created_at: "2024-01-13T09:15:00Z",
-      status: "En attente",
-      candidatures_count: 15
-    },
-    {
-      id: 4,
-      title: "Application de gestion événementielle",
-      description: "Plateforme web pour la gestion complète d'événements universitaires",
-      image: "https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "Web" },
-      owner: { first_name: "Sara", last_name: "Khalil", username: "skhalil", email: "sara.khalil@emsi-edu.ma" },
-      skills: ["React", "Node.js", "Express", "PostgreSQL", "Socket.io"],
-      created_at: "2024-01-12T11:20:00Z",
-      status: "Refusé",
-      candidatures_count: 6
-    },
-    {
-      id: 5,
-      title: "Bot de trading automatisé",
-      description: "Développement d'un bot intelligent pour le trading automatique des cryptomonnaies",
-      image: "https://images.pexels.com/photos/7821921/pexels-photo-7821921.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "FinTech" },
-      owner: { first_name: "Hamza", last_name: "Radi", username: "hradi", email: "hamza.radi@emsi-edu.ma" },
-      skills: ["Python", "Machine Learning", "TensorFlow", "API Trading", "Blockchain"],
-      created_at: "2024-01-10T16:45:00Z",
-      status: "En attente",
-      candidatures_count: 9
-    },
-    {
-      id: 6,
-      title: "Plateforme e-learning adaptative",
-      description: "Système d'apprentissage en ligne avec intelligence artificielle pour personnaliser les parcours",
-      image: "https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400",
-      category: { name: "Education" },
-      owner: { first_name: "Laila", last_name: "Hamidi", username: "lhamidi", email: "laila.hamidi@emsi-edu.ma" },
-      skills: ["Python", "Django", "AI/ML", "React", "PostgreSQL", "Docker"],
-      created_at: "2024-01-08T14:00:00Z",
-      status: "En attente",
-      candidatures_count: 18
-    }
-  ];
-
-
-
+  // Charger les projets depuis l'API
   useEffect(() => {
-    // Simuler le chargement des données
-    setTimeout(() => {
-      setProjects(mockProjects);
-      setLoading(false);
-    }, 1000);
+    const fetchProjects = async () => {
+      try {
+        console.log('🔄 Chargement des projets depuis l\'API...');
+        const token = localStorage.getItem('access_token');
+        
+        const response = await fetch('http://localhost:8000/api/projects/simple/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+        });
+
+        console.log('📡 Réponse API projets:', response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('📊 Données projets reçues:', data);
+        console.log('📊 Nombre de projets:', data.length);
+        
+        setProjects(data);
+        setError('');
+        console.log('✅ Projets chargés avec succès:', data.length);
+        
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des projets:', error);
+        setError(`Erreur lors du chargement des projets: ${error.message}`);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
   }, []);
+
+  // Fonction pour approuver un projet
+  const approveProject = async (projectId) => {
+    try {
+      console.log('🔄 Approbation du projet:', projectId);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8000/api/projects/${projectId}/approve/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Projet approuvé:', data);
+        
+        // Recharger les projets pour avoir les données à jour
+        const updatedResponse = await fetch('http://localhost:8000/api/projects/simple/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+        });
+        
+        if (updatedResponse.ok) {
+          const updatedData = await updatedResponse.json();
+          setProjects(updatedData);
+          
+          // Mettre à jour le projet sélectionné
+          const updatedProject = updatedData.find(p => p.id === projectId);
+          if (selectedProject?.id === projectId && updatedProject) {
+            setSelectedProject(updatedProject);
+          }
+        }
+        
+        alert('Projet approuvé avec succès !');
+      } else {
+        throw new Error('Erreur lors de l\'approbation');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'approbation:', error);
+      alert('Erreur lors de l\'approbation du projet');
+    }
+  };
+
+  // Fonction pour rejeter un projet
+  const rejectProject = async (projectId, reason = '') => {
+    try {
+      console.log('🔄 Rejet du projet:', projectId);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8000/api/projects/${projectId}/reject/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Projet rejeté:', data);
+        
+        // Recharger les projets pour avoir les données à jour
+        const updatedResponse = await fetch('http://localhost:8000/api/projects/simple/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+        });
+        
+        if (updatedResponse.ok) {
+          const updatedData = await updatedResponse.json();
+          setProjects(updatedData);
+          
+          // Mettre à jour le projet sélectionné
+          const updatedProject = updatedData.find(p => p.id === projectId);
+          if (selectedProject?.id === projectId && updatedProject) {
+            setSelectedProject(updatedProject);
+          }
+        }
+        
+        alert('Projet rejeté avec succès !');
+      } else {
+        throw new Error('Erreur lors du rejet');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du rejet:', error);
+      alert('Erreur lors du rejet du projet');
+    }
+  };
 
   const handleProjectClick = (project) => {
     setSelectedProject(project);
@@ -124,6 +175,49 @@ const AdminDemandes = () => {
       <AdminSidebar />
       <div className="admin-main-pro" style={{padding:32, background:'#f8fffe'}}>
         <h1 style={{marginBottom:32, fontWeight:800, color:'#116b41'}}>Gestion des Demandes</h1>
+        
+        {/* Indicateur de source des données */}
+        <div style={{
+          marginBottom: '16px',
+          padding: '8px 12px',
+          borderRadius: '20px',
+          fontSize: '14px',
+          fontWeight: '600',
+          display: 'inline-block',
+          backgroundColor: '#e6f7ff',
+          color: '#1890ff',
+          border: '1px solid #91d5ff'
+        }}>
+          🌐 Données en temps réel (API Backend)
+        </div>
+
+        {/* Message d'erreur si nécessaire */}
+        {error && (
+          <div style={{
+            background: '#fff3cd', 
+            border: '1px solid #ffeaa7', 
+            borderRadius: '8px', 
+            padding: '16px', 
+            margin: '20px 0', 
+            color: '#856404'
+          }}>
+            <div style={{ marginBottom: '12px' }}>⚠️ {error}</div>
+            <button 
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#1dbf73',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🔄 Recharger
+            </button>
+          </div>
+        )}
         
         {/* Statistiques */}
         <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:20, marginBottom:32}}>

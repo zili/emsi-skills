@@ -187,10 +187,8 @@ def my_project_stats(request):
 def simple_projects_list(request):
     """Liste simple des projets avec les vraies données"""
     try:
-        # Récupérer tous les projets avec leurs relations (approuvés ET en attente)
-        projects = Project.objects.filter(
-            admin_status='approved'
-        ).select_related('client', 'category')
+        # Récupérer tous les projets avec leurs relations (pour l'interface admin)
+        projects = Project.objects.all().select_related('client', 'category')
         
         # Transformer en format attendu par le frontend
         projects_data = []
@@ -208,17 +206,38 @@ def simple_projects_list(request):
             skills_list = project.get_required_skills_list()
             tags_data = [{'name': skill} for skill in skills_list] if skills_list else []
             
+            # Mapping des statuts pour l'affichage
+            status_mapping = {
+                'pending_approval': 'En attente',
+                'approved': 'Approuvé', 
+                'rejected': 'Refusé'
+            }
+            
+            # Construire l'URL de l'image
+            if project.main_image:
+                image_url = request.build_absolute_uri(project.main_image.url)
+                print(f"🖼️ Image pour projet {project.id}: {image_url}")
+            else:
+                image_url = 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80'
+                print(f"🖼️ Pas d'image pour projet {project.id}, utilisation image par défaut")
+            
             projects_data.append({
                 'id': project.id,
                 'title': project.title,
                 'description': project.description,
                 'category': {'name': project.category.name if project.category else 'Autre'},
                 'client': client_data,
+                'owner': client_data,  # Pour compatibilité avec AdminDemandes
+                'skills': skills_list,  # Format array direct pour AdminDemandes
                 'estimated_duration': project.estimated_duration or 'Non définie',
                 'required_skills': project.required_skills or '',
-                'created_at': project.created_at,
+                'required_skills_list': skills_list,
+                'created_at': project.created_at.isoformat(),
+                'display_date': project.created_at.strftime('%d/%m/%Y'),
+                'status': status_mapping.get(project.admin_status, 'En attente'),  # Pour AdminDemandes
+                'admin_status': project.admin_status,  # Statut brut pour les actions
                 'tags': tags_data,
-                'image': project.main_image.url if project.main_image else 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80'
+                'image': image_url
             })
         
         return Response(projects_data)
