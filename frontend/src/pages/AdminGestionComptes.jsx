@@ -58,6 +58,19 @@ const AdminGestionComptes = () => {
     setMessage({ type: "", text: "" });
 
     try {
+      // Validation côté frontend
+      if (form.mdp !== form.mdpConfirm) {
+        setMessage({ type: "error", text: "Les mots de passe ne correspondent pas" });
+        setLoading(false);
+        return;
+      }
+
+      if (form.mdp.length < 6) {
+        setMessage({ type: "error", text: "Le mot de passe doit contenir au moins 6 caractères" });
+        setLoading(false);
+        return;
+      }
+
       // Préparer les données pour l'API
       const userData = {
         username: `${form.prenom.toLowerCase()}.${form.nom.toLowerCase()}`,
@@ -77,7 +90,9 @@ const AdminGestionComptes = () => {
         github_url: "" // Optionnel
       };
 
-      const response = await ApiService.request('/accounts/register/', {
+      console.log('🚀 Données à envoyer:', userData);
+
+      const response = await fetch('http://localhost:8000/api/auth/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,8 +100,19 @@ const AdminGestionComptes = () => {
         body: JSON.stringify(userData)
       });
 
-      if (response.message) {
-        setMessage({ type: "success", text: response.message });
+      console.log('📡 Statut de la réponse:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('❌ Erreur du serveur:', errorData);
+        throw { response: { data: errorData } };
+      }
+
+      const responseData = await response.json();
+      console.log('✅ Réponse du serveur:', responseData);
+
+      if (responseData.message) {
+        setMessage({ type: "success", text: responseData.message });
         // Réinitialiser le formulaire
         setForm({
           nom: "",
@@ -100,17 +126,21 @@ const AdminGestionComptes = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur lors de la création:', error);
+      console.error('❌ Erreur détaillée lors de la création:', error);
       let errorMessage = "Erreur lors de la création du compte";
       
       if (error.response && error.response.data) {
         // Afficher les erreurs spécifiques du backend
+        console.log('📋 Données d\'erreur du backend:', error.response.data);
         const errors = error.response.data;
         if (typeof errors === 'object') {
           errorMessage = Object.values(errors).flat().join(', ');
         } else {
           errorMessage = errors.toString();
         }
+      } else if (error.message) {
+        errorMessage = error.message;
+        console.log('📋 Message d\'erreur:', error.message);
       }
       
       setMessage({ type: "error", text: errorMessage });
