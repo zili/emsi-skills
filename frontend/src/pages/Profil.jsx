@@ -3,12 +3,13 @@ import './Profil.scss';
 
 const Profil = () => {
   const [profileData, setProfileData] = useState({
-    nom: "Nom d'utilisateur",
-    email: "user@example.com",
-    type: "Staff",
+    nom: "Lions Tanger",
+    email: "lions.tanger@emsi-edu.ma",
+    type: "Club",
     photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600",
     projets_crees: 5,
-    candidatures_recues: 12
+    candidatures_recues: 12,
+    isLionsMember: true // Indicateur si l'utilisateur est membre du club Lions
   });
   const fileInputRef = useRef(null);
 
@@ -23,6 +24,14 @@ const Profil = () => {
     }
   };
 
+  // Fonction pour obtenir la photo de profil appropriée
+  const getProfilePhoto = () => {
+    if (profileData.isLionsMember) {
+      return "/img/lionss.jpg";
+    }
+    return profileData.photo;
+  };
+
   return (
     <div className="profil-modern-page">
       <div className="profil-container">
@@ -32,7 +41,7 @@ const Profil = () => {
           <div className="profil-photo-section">
             <div className="photo-container">
               <img 
-                src={profileData.photo} 
+                src={getProfilePhoto()} 
                 alt="Photo de profil" 
                 className="profile-photo"
               />
@@ -55,8 +64,6 @@ const Profil = () => {
               <h1>{profileData.nom}</h1>
               <p className="user-type">{profileData.type}</p>
               <p className="user-email">{profileData.email}</p>
-              
-
             </div>
           </div>
 

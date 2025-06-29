@@ -18,9 +18,9 @@ const Candidature = () => {
   const [loading, setLoading] = useState(true);
 
   // Données statiques pour Yassine Zilili (évite les problèmes d'authentification)
-  const mockCandidatures = [
-    {
-      id: 1,
+const mockCandidatures = [
+  {
+    id: 1,
       status: "pending",
       cover_letter: "Je suis très intéressé par ce projet de développement web. Avec mes 3 ans d'expérience en React et Node.js, je peux apporter une vraie valeur ajoutée à votre équipe.",
       applied_at: "2024-06-20T10:30:00Z",
@@ -28,14 +28,14 @@ const Candidature = () => {
       proposed_budget: 2500,
       proposed_timeline: "3 semaines",
       relevant_experience: "Développement de 5 applications web complètes avec React et Django",
-      project: {
-        id: 1,
-        title: "Développement d'une application mobile",
+    project: {
+      id: 1,
+      title: "Développement d'une application mobile",
         category: "IT"
-      }
-    },
-    {
-      id: 2,
+    }
+  },
+  {
+    id: 2,
       status: "accepted",
       cover_letter: "Bonjour, j'aimerais participer à ce projet de design. Voici mon portfolio avec mes réalisations précédentes en UI/UX.",
       applied_at: "2024-06-15T14:20:00Z",
@@ -43,14 +43,14 @@ const Candidature = () => {
       proposed_budget: 1800,
       proposed_timeline: "2 semaines",
       relevant_experience: "Design de 10+ interfaces web modernes avec Figma",
-      project: {
-        id: 2,
-        title: "Refonte graphique d'un site web",
+    project: {
+      id: 2,
+      title: "Refonte graphique d'un site web",
         category: "Art"
-      }
-    },
-    {
-      id: 3,
+    }
+  },
+  {
+    id: 3,
       status: "rejected",
       cover_letter: "Je souhaite contribuer à cette cause qui me tient à cœur. J'ai de l'expérience en organisation d'événements caritatifs.",
       applied_at: "2024-06-10T16:45:00Z",
@@ -59,14 +59,14 @@ const Candidature = () => {
       proposed_timeline: "1 mois",
       rejection_reason: "Profil ne correspondant pas exactement aux besoins du projet",
       relevant_experience: "Organisation de 3 événements caritatifs avec 200+ participants",
-      project: {
-        id: 3,
-        title: "Organisation d'un événement caritatif",
+    project: {
+      id: 3,
+      title: "Organisation d'un événement caritatif",
         category: "Bénévole"
-      }
-    },
-    {
-      id: 4,
+    }
+  },
+  {
+    id: 4,
       status: "pending",
       cover_letter: "Ingénieur informatique avec expertise en gestion de projet, je suis disponible pour ce projet de supervision technique.",
       applied_at: "2024-06-25T08:15:00Z",
@@ -74,8 +74,8 @@ const Candidature = () => {
       proposed_budget: 3000,
       proposed_timeline: "4 semaines",
       relevant_experience: "Supervision de 2 projets techniques complexes en tant que lead developer",
-      project: {
-        id: 4,
+    project: {
+      id: 4,
         title: "Supervision de projet technique",
         category: "IT"
       }
@@ -332,8 +332,8 @@ const Candidature = () => {
                     className="withdraw-btn"
                     onClick={() => handleWithdrawCandidature(candidature.id)}
                   >
-                    Retirer la candidature
-                  </button>
+                      Retirer la candidature
+                    </button>
                 )}
                 {candidature.status === 'accepted' && (
                   <button className="contact-btn">

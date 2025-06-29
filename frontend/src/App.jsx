@@ -34,6 +34,7 @@ const AdminProjetDetail = lazy(() => import("./pages/AdminProjetDetail"));
 import AccueilStaffClub from "./pages/AccueilStaffClub";
 import Demandes from "./pages/Demandes";
 import Profil from "./pages/Profil";
+import DebugProjects from "./pages/DebugProjects";
 
 function App() {
   const Layout = () => {

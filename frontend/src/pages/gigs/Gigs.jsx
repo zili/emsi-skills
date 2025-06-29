@@ -102,7 +102,10 @@ function Gigs() {
                 desc: gig.description || gig.title,
                 price: gig.budget || 59,
                 star: gig.rating || 5,
-                username: gig.owner?.username || "Utilisateur EMSI"
+                username: gig.owner ? 
+                `${gig.owner.first_name || ''} ${gig.owner.last_name || ''}`.trim() || 
+                gig.owner.username || 
+                "Utilisateur" : "Utilisateur"
               }} />
             ))
           ) : (

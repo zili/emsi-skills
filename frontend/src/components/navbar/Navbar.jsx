@@ -197,10 +197,10 @@ function Navbar() {
           {getNavbarLinks()}
             <div className="user" onClick={()=>setOpen(!open)}>
               <img
-              src={currentUser?.profile_picture || "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600"}
+                src={userType === 'club' ? "/img/lionss.jpg" : (currentUser?.profile_picture || "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600")}
                 alt=""
               />
-            <span>{currentUser?.first_name || currentUser?.username || "Anna"}</span>
+            <span>{userType === 'club' ? "Lions" : (currentUser?.first_name || currentUser?.username || "Anna")}</span>
               {open && <div className="options">
                 {getSidebarOptions()}
               </div>}

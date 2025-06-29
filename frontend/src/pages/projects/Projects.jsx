@@ -18,30 +18,20 @@ const Projects = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-        
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch('http://localhost:8000/api/projects/', {
-          headers
-        });
+        // Utiliser l'API publique pour éviter les problèmes d'authentification
+        console.log('🔄 Chargement des projets depuis l\'API publique...');
+        const response = await fetch('http://localhost:8000/api/projects/public/');
 
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ Données projets chargées:', data);
           setProjects(data.results || data || []);
-        } else if (response.status === 401) {
-          // Token expiré, rediriger vers login
-          navigate('/login');
         } else {
+          console.error('❌ Erreur API:', response.status);
           setError('Erreur lors du chargement des projets');
         }
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('❌ Erreur réseau:', error);
         setError('Impossible de charger les projets');
       } finally {
         setLoading(false);
@@ -54,8 +44,9 @@ const Projects = () => {
   const filteredProjects = projects.filter((p) => {
     const matchSearch =
       (p.title && p.title.toLowerCase().includes(search.toLowerCase())) ||
-      (p.client && p.client.toLowerCase().includes(search.toLowerCase())) ||
-      (p.owner && p.owner.username && p.owner.username.toLowerCase().includes(search.toLowerCase()));
+      (p.client && p.client.first_name && p.client.first_name.toLowerCase().includes(search.toLowerCase())) ||
+      (p.client && p.client.last_name && p.client.last_name.toLowerCase().includes(search.toLowerCase())) ||
+      (p.client && p.client.username && p.client.username.toLowerCase().includes(search.toLowerCase()));
     const matchStatus = status === "Tous" || p.status === status;
     const matchRating = rating === "Toutes" || (p.rating && p.rating >= rating);
     return matchSearch && matchStatus && matchRating;
@@ -133,7 +124,10 @@ const Projects = () => {
                     ))}
                   </div>
                 </td>
-                <td>{p.owner ? p.owner.username : 'Non défini'}</td>
+                <td>{p.client ? 
+                  `${p.client.first_name || ''} ${p.client.last_name || ''}`.trim() || 
+                  p.client.username || 
+                  'Utilisateur' : 'Non défini'}</td>
                 <td>{p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : 'N/A'}</td>
                 <td>
                   {p.rating ? (

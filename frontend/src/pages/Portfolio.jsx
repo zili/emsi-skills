@@ -21,12 +21,12 @@ const Portfolio = () => {
   useEffect(() => {
     setTimeout(() => {
       const data = {
-        name: "Yassine Zilili",
-        photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=400",
-        description: "Étudiant en ingénierie informatique passionné par le développement web et l'innovation.",
+    name: "Yassine Zilili",
+    photo: "https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=400",
+    description: "Étudiant en ingénierie informatique passionné par le développement web et l'innovation.",
         linkedin: "https://www.linkedin.com/in/yassine-zilili",
         cv: "https://drive.google.com/file/d/1example_cv_file/view",
-        skills: ["React", "Node.js", "UI/UX", "MongoDB", "Figma", "Python"],
+    skills: ["React", "Node.js", "UI/UX", "MongoDB", "Figma", "Python"],
         languages: ["Français", "Anglais"],
         projects: [
           {
@@ -71,8 +71,8 @@ const Portfolio = () => {
         description: data.description,
         linkedin: data.linkedin,
         cv: data.cv,
-        skills: data.skills,
-        languages: data.languages
+        skills: data.skills || ['React', 'Node.js', 'UI/UX', 'MongoDB', 'Figma', 'Python'],
+        languages: data.languages || ['Français', 'Anglais']
       });
       
       setLoading(false);
@@ -150,7 +150,7 @@ const Portfolio = () => {
       </span>
     ));
   };
-
+  
   const getButtonStyle = (buttonName) => ({
     background: hoveredButton === buttonName ? '#0d5d33' : '#178f56',
     color: 'white',
@@ -173,7 +173,7 @@ const Portfolio = () => {
     );
   }
 
-  return (
+    return (
     <div style={{ 
       background: '#f8f9fa',
       minHeight: '100vh',
@@ -332,8 +332,8 @@ const Portfolio = () => {
               ))}
             </div>
           </div>
+          </div>
         </div>
-      </div>
 
       {/* Modal d'édition du profil */}
       {showEditModal && (
@@ -395,9 +395,9 @@ const Portfolio = () => {
                 }}
               >
                 ✕
-              </button>
+                </button>
             </div>
-
+            
             {/* Contenu du modal */}
             <div style={{
               background: 'white',
@@ -413,8 +413,8 @@ const Portfolio = () => {
                   alignItems: 'center',
                   gap: '0.5rem'
                 }}>
-                  Photo de profil
-                </h3>
+                      Photo de profil
+                    </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <img 
                     src={editForm.photo} 
@@ -428,12 +428,12 @@ const Portfolio = () => {
                     }}
                   />
                   <div>
-                    <input 
-                      type="file" 
+                        <input
+                          type="file"
                       accept="image/*"
                       onChange={(e) => handleFileUpload(e, 'photo')}
                       style={{ display: 'none' }}
-                      id="photo-upload"
+                          id="photo-upload"
                     />
                     <label 
                       htmlFor="photo-upload"
@@ -450,11 +450,11 @@ const Portfolio = () => {
                         fontSize: '1rem'
                       }}
                     >
-                      Choisir une photo
-                    </label>
+                          Choisir une photo
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
               {/* Section Description professionnelle */}
               <div style={{ marginBottom: '2rem' }}>
@@ -465,9 +465,9 @@ const Portfolio = () => {
                   alignItems: 'center',
                   gap: '0.5rem'
                 }}>
-                  Description professionnelle
-                </h3>
-                <textarea 
+                      Description professionnelle
+                    </h3>
+                      <textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                   style={{
@@ -586,8 +586,8 @@ const Portfolio = () => {
                         e.target.value = '';
                       }
                     }}
-                  />
-                </div>
+                      />
+                    </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {editForm.languages.map((language, index) => (
                     <span 
@@ -624,7 +624,7 @@ const Portfolio = () => {
                     </span>
                   ))}
                 </div>
-              </div>
+                  </div>
 
               {/* Section Liens professionnels */}
               <div style={{ marginBottom: '2rem' }}>
@@ -632,17 +632,17 @@ const Portfolio = () => {
                   color: '#333', 
                   marginBottom: '1rem'
                 }}>
-                  Liens professionnels
-                </h3>
+                      Liens professionnels
+                    </h3>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   {/* LinkedIn */}
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      LinkedIn
-                    </label>
-                    <input 
-                      type="url"
+                          LinkedIn
+                        </label>
+                        <input
+                          type="url"
                       value={editForm.linkedin}
                       onChange={(e) => setEditForm({...editForm, linkedin: e.target.value})}
                       style={{
@@ -653,21 +653,21 @@ const Portfolio = () => {
                         fontSize: '1rem'
                       }}
                       placeholder="https://linkedin.com/in/yassine-zilili"
-                    />
-                  </div>
+                        />
+                      </div>
 
                   {/* CV */}
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                      CV (Fichier)
-                    </label>
+                          CV (Fichier)
+                        </label>
                     <div>
-                      <input 
-                        type="file" 
+                          <input
+                            type="file"
                         accept=".pdf,.doc,.docx"
                         onChange={(e) => handleFileUpload(e, 'cv')}
                         style={{ display: 'none' }}
-                        id="cv-upload"
+                            id="cv-upload"
                       />
                       <label 
                         htmlFor="cv-upload"
@@ -686,12 +686,12 @@ const Portfolio = () => {
                           justifyContent: 'center'
                         }}
                       >
-                        Télécharger CV
-                      </label>
+                            Télécharger CV
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
               {/* Boutons d'action */}
               <div style={{ 
@@ -730,9 +730,9 @@ const Portfolio = () => {
                   Enregistrer
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
+                    </div>
+                  </div>
+                </div>
       )}
 
       {/* Sections projets et commentaires */}
@@ -854,8 +854,8 @@ const Portfolio = () => {
               </span>
             </div>
           ))}
-        </div>
-      </div>
+            </div>
+          </div>
     </div>
   );
 };

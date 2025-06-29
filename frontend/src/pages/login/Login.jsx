@@ -18,42 +18,31 @@ const Login = () => {
     const fetchCities = async () => {
       try {
         console.log('🔄 Tentative de chargement des villes...');
-        const response = await fetch('http://localhost:8000/api/auth/cities/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
         
-        console.log('📡 Réponse reçue:', response.status, response.statusText);
+        // Utiliser uniquement les 5 villes spécifiées
+        const allowedCities = [
+          { id: 1, name: 'Tanger' },
+          { id: 2, name: 'Casablanca' },
+          { id: 3, name: 'Rabat' },
+          { id: 4, name: 'Fès' },
+          { id: 5, name: 'Marrakech' }
+        ];
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('📊 Données reçues:', data);
-        setVilles(data.results || []);
-        console.log('✅ Villes chargées avec succès:', data.results?.length || 0);
+        setVilles(allowedCities);
+        console.log('✅ Villes chargées avec succès:', allowedCities.length);
       } catch (error) {
         console.error('❌ Erreur lors du chargement des villes:', error);
-        console.error('Type d\'erreur:', error.name);
-        console.error('Message:', error.message);
         
         // Fallback avec des villes par défaut si l'API ne répond pas
         console.log('🔄 Utilisation des villes par défaut...');
         const defaultCities = [
-          { id: 1, name: 'Casablanca' },
-          { id: 2, name: 'Rabat' },
-          { id: 3, name: 'Fès' },
-          { id: 4, name: 'Marrakech' },
-          { id: 5, name: 'Agadir' },
-          { id: 6, name: 'Tanger' },
-          { id: 7, name: 'Meknès' },
-          { id: 8, name: 'Oujda' }
+          { id: 1, name: 'Tanger' },
+          { id: 2, name: 'Casablanca' },
+          { id: 3, name: 'Rabat' },
+          { id: 4, name: 'Fès' },
+          { id: 5, name: 'Marrakech' }
         ];
         setVilles(defaultCities);
-        setError('Utilisation des villes par défaut - Serveur API non disponible');
       }
     };
     fetchCities();
