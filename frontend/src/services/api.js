@@ -304,20 +304,20 @@ class ApiService {
 
     async acceptCandidature(id) {
         return this.request(`/candidatures/${id}/accept/`, {
-            method: 'POST',
+            method: 'PATCH',
         });
     }
 
     async rejectCandidature(id, reason) {
         return this.request(`/candidatures/${id}/reject/`, {
-            method: 'POST',
+            method: 'PATCH',
             body: JSON.stringify({ reason }),
         });
     }
 
     async withdrawCandidature(id) {
         return this.request(`/candidatures/${id}/withdraw/`, {
-            method: 'POST',
+            method: 'PATCH',
         });
     }
 

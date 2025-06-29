@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Candidature.scss";
+import apiService from "../services/api";
 
 const categories = ["Catégorie", "IT", "Art", "Bénévole", "Civil"];
 const statuts = ["Décision", "pending", "accepted", "rejected"];
@@ -16,6 +17,7 @@ const Candidature = () => {
   const [dateFilter, setDateFilter] = useState("Année");
   const [candidatures, setCandidatures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Données statiques pour Yassine Zilili (évite les problèmes d'authentification)
 const mockCandidatures = [
@@ -82,39 +84,62 @@ const mockCandidatures = [
     }
   ];
 
-  // Fonction pour récupérer les candidatures (avec fallback vers données statiques)
+  // Fonction pour récupérer les candidatures depuis l'API
   const fetchCandidatures = async () => {
     try {
-      const token = localStorage.getItem('token');
+      setLoading(true);
+      setError(null);
+      console.log('🔄 Récupération des candidatures depuis l\'API...');
       
-      if (token) {
-        // Essayer l'API si on a un token
-        const response = await fetch('http://localhost:8000/api/candidatures/', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Candidatures API récupérées:', data);
-          setCandidatures(data);
-          setLoading(false);
-          return;
-        }
+      // Utiliser l'ApiService au lieu de fetch direct
+      const data = await apiService.getCandidatures();
+      console.log('✅ Candidatures API récupérées:', data);
+      
+      // Vérifier et adapter le format des données
+      let candidaturesList = [];
+      
+      if (Array.isArray(data)) {
+        candidaturesList = data;
+      } else if (data && Array.isArray(data.results)) {
+        // Format paginé Django REST Framework
+        candidaturesList = data.results;
+      } else if (data && data.candidatures && Array.isArray(data.candidatures)) {
+        // Format avec wrapper
+        candidaturesList = data.candidatures;
+      } else {
+        console.warn('⚠️ Format de données inattendu:', typeof data, data);
+        throw new Error('Format de données inattendu de l\'API');
       }
       
-      // Fallback vers données statiques
-      console.log('⚠️ Utilisation des données statiques pour Yassine Zilili');
-      setTimeout(() => {
-        setCandidatures(mockCandidatures);
-        setLoading(false);
-      }, 500);
+      // Adapter le format des candidatures pour correspondre au frontend
+      const adaptedCandidatures = candidaturesList.map(c => ({
+        id: c.id,
+        status: c.status,
+        cover_letter: c.cover_letter,
+        applied_at: c.applied_at,
+        updated_at: c.updated_at || c.applied_at,
+        proposed_budget: c.proposed_budget,
+        proposed_timeline: c.proposed_timeline,
+        relevant_experience: c.relevant_experience,
+        rejection_reason: c.rejection_reason,
+        project: {
+          id: c.project?.id,
+          title: c.project?.title,
+          category: c.project?.category
+        }
+      }));
+      
+      setCandidatures(adaptedCandidatures);
+      console.log(`📊 ${adaptedCandidatures.length} candidatures chargées et adaptées depuis l'API`);
+      
+      setLoading(false);
       
     } catch (error) {
-      console.error('Erreur API, utilisation des données statiques:', error);
+      console.error('❌ Erreur lors de la récupération des candidatures:', error);
+      setError(error.message);
+      
+      // En cas d'erreur, utiliser les données mockées comme fallback
+      console.log('⚠️ Utilisation des données mockées comme fallback');
       setCandidatures(mockCandidatures);
       setLoading(false);
     }
@@ -122,42 +147,33 @@ const mockCandidatures = [
 
   // Fonction pour retirer une candidature
   const handleWithdrawCandidature = async (candidatureId) => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      if (token) {
-        // Essayer l'API si on a un token
-        const response = await fetch(`http://localhost:8000/api/candidatures/${candidatureId}/withdraw/`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+    if (!window.confirm('Êtes-vous sûr de vouloir retirer cette candidature ?')) {
+      return;
+    }
 
-        if (response.ok) {
-          fetchCandidatures();
-          alert('Candidature retirée avec succès');
-          return;
-        }
-      }
+    try {
+      console.log('🔄 Retrait de la candidature:', candidatureId);
       
-      // Simulation pour les données statiques
-      const updatedCandidatures = candidatures.map(c => 
-        c.id === candidatureId 
-          ? { ...c, status: 'withdrawn' }
-          : c
-      ).filter(c => c.status !== 'withdrawn'); // Retirer de la liste
+      // Utiliser l'ApiService au lieu de fetch direct
+      await apiService.withdrawCandidature(candidatureId);
+      console.log('✅ Candidature retirée avec succès');
       
-      setCandidatures(updatedCandidatures);
+      // Recharger la liste des candidatures
+      fetchCandidatures();
       alert('Candidature retirée avec succès');
       
     } catch (error) {
-      console.error('Erreur lors du retrait:', error);
-      // Même simulation en cas d'erreur
-      const updatedCandidatures = candidatures.filter(c => c.id !== candidatureId);
-      setCandidatures(updatedCandidatures);
-      alert('Candidature retirée avec succès');
+      console.error('❌ Erreur lors du retrait de la candidature:', error);
+      
+             // Simulation locale en cas d'erreur API (pour les données mockées)
+       if (error.message.includes('401') || error.message.includes('token')) {
+         console.log('⚠️ Simulation du retrait pour les données mockées');
+         const updatedCandidatures = (candidatures || []).filter(c => c.id !== candidatureId);
+         setCandidatures(updatedCandidatures);
+         alert('Candidature retirée avec succès (simulation)');
+       } else {
+         alert('❌ Erreur lors du retrait de la candidature. Veuillez réessayer.');
+       }
     }
   };
 
@@ -166,12 +182,12 @@ const mockCandidatures = [
   }, []);
 
   // Créer la liste des dates disponibles
-  const dates = ["Année", ...Array.from(new Set(candidatures.map(c => 
+  const dates = ["Année", ...Array.from(new Set((candidatures || []).map(c => 
     c.applied_at ? new Date(c.applied_at).getFullYear().toString() : '2024'
   )))];
 
   // Filtrer les candidatures
-  const filteredCandidatures = candidatures.filter((c) => {
+  const filteredCandidatures = (candidatures || []).filter((c) => {
     const matchSearch = !search || 
       c.project?.title?.toLowerCase().includes(search.toLowerCase()) ||
       c.cover_letter?.toLowerCase().includes(search.toLowerCase());
@@ -202,19 +218,19 @@ const mockCandidatures = [
       <div className="stats-container">
         <div className="stat-card">
           <h3>Total</h3>
-          <p>{candidatures.length}</p>
+          <p>{(candidatures || []).length}</p>
         </div>
         <div className="stat-card accepted">
           <h3>Acceptées</h3>
-          <p>{candidatures.filter(c => c.status === 'accepted').length}</p>
+          <p>{(candidatures || []).filter(c => c.status === 'accepted').length}</p>
         </div>
         <div className="stat-card pending">
           <h3>En attente</h3>
-          <p>{candidatures.filter(c => c.status === 'pending').length}</p>
+          <p>{(candidatures || []).filter(c => c.status === 'pending').length}</p>
         </div>
         <div className="stat-card rejected">
           <h3>Refusées</h3>
-          <p>{candidatures.filter(c => c.status === 'rejected').length}</p>
+          <p>{(candidatures || []).filter(c => c.status === 'rejected').length}</p>
         </div>
       </div>
       
@@ -256,10 +272,26 @@ const mockCandidatures = [
 
       {/* Liste des candidatures */}
       <div className="candidatures-list">
+        {error && (
+          <div className="error-message" style={{
+            background: '#f8d7da',
+            color: '#721c24',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginBottom: '1rem'
+          }}>
+            <h4>Erreur de chargement</h4>
+            <p>{error}</p>
+            <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              💡 Les données affichées ci-dessous sont des exemples de démonstration.
+            </p>
+          </div>
+        )}
+        
         {filteredCandidatures.length === 0 ? (
           <div className="no-candidatures">
             <p>
-              {candidatures.length === 0 
+              {(candidatures || []).length === 0 
                 ? "Vous n'avez encore soumis aucune candidature" 
                 : "Aucune candidature ne correspond aux filtres sélectionnés"
               }
