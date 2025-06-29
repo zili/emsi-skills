@@ -1,20 +1,38 @@
 import React, { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import ApiService from "../services/api";
 
-const villes = ["Tanger", "Fès", "Casablanca", "Marrakech", "Rabat"];
+const villes = [
+  { id: 6, name: "Tanger" },
+  { id: 3, name: "Fès" },
+  { id: 1, name: "Casablanca" },
+  { id: 4, name: "Marrakech" },
+  { id: 2, name: "Rabat" },
+  { id: 5, name: "Agadir" },
+  { id: 7, name: "Meknès" },
+  { id: 8, name: "Oujda" }
+];
 const classes = ["1ère année", "2ème année", "3ème année", "4ème année", "5ème année"];
-const types = ["Étudiant", "EMSI Staff", "Club"];
+const types = [
+  { value: "student", label: "Étudiant" },
+  { value: "staff", label: "EMSI Staff" },
+  { value: "club", label: "Club" }
+];
 
 const AdminGestionComptes = () => {
   const [form, setForm] = useState({
     nom: "",
     prenom: "",
-    type: types[0],
+    type: types[0].value,
     classe: classes[0],
-    ville: villes[0],
+    ville: villes[0].id,
     email: "",
-    mdp: ""
+    mdp: "",
+    mdpConfirm: ""
   });
+  
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   // Générer l'email automatiquement
   React.useEffect(() => {
@@ -26,15 +44,79 @@ const AdminGestionComptes = () => {
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
+    setMessage({ type: "", text: "" });
   };
 
   const handleTypeChange = e => {
     setForm(f => ({ ...f, type: e.target.value, classe: classes[0] }));
+    setMessage({ type: "", text: "" });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Compte créé (mock) : " + JSON.stringify(form, null, 2));
+    setLoading(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      // Préparer les données pour l'API
+      const userData = {
+        username: `${form.prenom.toLowerCase()}.${form.nom.toLowerCase()}`,
+        email: form.email,
+        password: form.mdp,
+        password_confirm: form.mdpConfirm,
+        first_name: form.prenom,
+        last_name: form.nom,
+        user_type: form.type,
+        city_id: form.ville,
+        phone: "", // Optionnel
+        bio: "", // Optionnel
+        skills: "", // Optionnel
+        experience_years: 0, // Optionnel
+        portfolio_url: "", // Optionnel
+        linkedin_url: "", // Optionnel
+        github_url: "" // Optionnel
+      };
+
+      const response = await ApiService.request('/accounts/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (response.message) {
+        setMessage({ type: "success", text: response.message });
+        // Réinitialiser le formulaire
+        setForm({
+          nom: "",
+          prenom: "",
+          type: types[0].value,
+          classe: classes[0],
+          ville: villes[0].id,
+          email: "",
+          mdp: "",
+          mdpConfirm: ""
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création:', error);
+      let errorMessage = "Erreur lors de la création du compte";
+      
+      if (error.response && error.response.data) {
+        // Afficher les erreurs spécifiques du backend
+        const errors = error.response.data;
+        if (typeof errors === 'object') {
+          errorMessage = Object.values(errors).flat().join(', ');
+        } else {
+          errorMessage = errors.toString();
+        }
+      }
+      
+      setMessage({ type: "error", text: errorMessage });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,10 +138,10 @@ const AdminGestionComptes = () => {
               <div>
                 <label style={{fontWeight:600, color:'#116b41'}}>Type</label>
                 <select name="type" value={form.type} onChange={handleTypeChange} style={{width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e6f4ee', marginTop:4}}>
-                  {types.map(t => <option key={t} value={t}>{t}</option>)}
+                  {types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
-              {form.type === "Étudiant" && (
+              {form.type === "student" && (
                 <div>
                   <label style={{fontWeight:600, color:'#116b41'}}>Classe</label>
                   <select name="classe" value={form.classe} onChange={handleChange} style={{width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e6f4ee', marginTop:4}}>
@@ -70,7 +152,7 @@ const AdminGestionComptes = () => {
               <div>
                 <label style={{fontWeight:600, color:'#116b41'}}>Ville</label>
                 <select name="ville" value={form.ville} onChange={handleChange} style={{width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e6f4ee', marginTop:4}}>
-                  {villes.map(v => <option key={v} value={v}>{v}</option>)}
+                  {villes.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                 </select>
               </div>
               <div>
@@ -81,7 +163,39 @@ const AdminGestionComptes = () => {
                 <label style={{fontWeight:600, color:'#116b41'}}>Mot de passe</label>
                 <input name="mdp" value={form.mdp} onChange={handleChange} type="password" required style={{width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e6f4ee', marginTop:4}} />
               </div>
-              <button type="submit" style={{marginTop:12, background:'#1dbf73', color:'#fff', border:'none', borderRadius:8, padding:'12px 0', fontWeight:700, fontSize:16, cursor:'pointer'}}>Créer le compte</button>
+              <div>
+                <label style={{fontWeight:600, color:'#116b41'}}>Confirmer le mot de passe</label>
+                <input name="mdpConfirm" value={form.mdpConfirm} onChange={handleChange} type="password" required style={{width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e6f4ee', marginTop:4}} />
+              </div>
+              {message.text && (
+                <div style={{
+                  padding: 12,
+                  borderRadius: 8,
+                  marginTop: 8,
+                  backgroundColor: message.type === "success" ? "#d4edda" : "#f8d7da",
+                  color: message.type === "success" ? "#155724" : "#721c24",
+                  border: `1px solid ${message.type === "success" ? "#c3e6cb" : "#f5c6cb"}`
+                }}>
+                  {message.text}
+                </div>
+              )}
+              <button 
+                type="submit" 
+                disabled={loading}
+                style={{
+                  marginTop:12, 
+                  background: loading ? '#ccc' : '#1dbf73', 
+                  color:'#fff', 
+                  border:'none', 
+                  borderRadius:8, 
+                  padding:'12px 0', 
+                  fontWeight:700, 
+                  fontSize:16, 
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {loading ? 'Création en cours...' : 'Créer le compte'}
+              </button>
             </form>
             <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:18}}>
               <label style={{fontWeight:600, color:'#116b41', marginBottom:8}}>Import en masse</label>

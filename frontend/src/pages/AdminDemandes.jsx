@@ -378,17 +378,19 @@ const AdminDemandes = () => {
                       fontWeight:700,
                       fontSize:16
                     }}>
-                      {selectedProject.owner.first_name[0]}{selectedProject.owner.last_name[0]}
+                      {(selectedProject.owner?.first_name?.[0] || '') + (selectedProject.owner?.last_name?.[0] || '')}
                     </div>
                     <div>
                       <div style={{fontWeight:600, color:'#116b41', fontSize:16}}>
-                        {selectedProject.owner.first_name} {selectedProject.owner.last_name}
+                        {selectedProject.owner?.full_name || 
+                         `${selectedProject.owner?.first_name || ''} ${selectedProject.owner?.last_name || ''}`.trim() ||
+                         selectedProject.owner?.username || 'Utilisateur'}
                       </div>
                       <div style={{color:'#7a8c85', fontSize:14}}>
-                        @{selectedProject.owner.username}
+                        @{selectedProject.owner?.username || 'username'}
                       </div>
                       <div style={{color:'#178f56', fontSize:13}}>
-                        {selectedProject.owner.email}
+                        {selectedProject.owner?.email || 'email@emsi.ma'}
                       </div>
                     </div>
                   </div>
@@ -404,9 +406,9 @@ const AdminDemandes = () => {
                     <div style={{marginBottom:12}}>
                       <strong style={{color:'#116b41'}}>Compétences requises:</strong>
                       <div style={{marginTop:8, display:'flex', flexWrap:'wrap', gap:6}}>
-                        {selectedProject.skills.map((skill, index) => (
+                        {selectedProject.skills && selectedProject.skills.map((skill, index) => (
                           <span 
-                            key={index}
+                            key={`skill-${selectedProject.id}-${index}`}
                             style={{
                               padding:'4px 8px',
                               background:'#e8f5e8',
@@ -461,18 +463,7 @@ const AdminDemandes = () => {
               {selectedProject.status === 'En attente' && (
                 <div style={{display:'flex', gap:16, justifyContent:'center', paddingTop:20, borderTop:'1px solid #e6f4ee'}}>
                   <button
-                    onClick={() => {
-                      // Logique pour approuver le projet
-                      setProjects(prev => 
-                        prev.map(project => 
-                          project.id === selectedProject.id 
-                            ? { ...project, status: 'Approuvé' }
-                            : project
-                        )
-                      );
-                      setSelectedProject({...selectedProject, status: 'Approuvé'});
-                      alert(`Projet "${selectedProject.title}" approuvé avec succès !`);
-                    }}
+                    onClick={() => approveProject(selectedProject.id)}
                     style={{
                       padding:'12px 32px',
                       background:'#4caf50',
@@ -501,17 +492,9 @@ const AdminDemandes = () => {
                   
                   <button
                     onClick={() => {
-                      if (window.confirm('Êtes-vous sûr de vouloir refuser ce projet ?')) {
-                        // Logique pour refuser le projet
-                        setProjects(prev => 
-                          prev.map(project => 
-                            project.id === selectedProject.id 
-                              ? { ...project, status: 'Refusé' }
-                              : project
-                          )
-                        );
-                        setSelectedProject({...selectedProject, status: 'Refusé'});
-                        alert(`Projet "${selectedProject.title}" refusé.`);
+                      const reason = prompt('Raison du rejet (optionnel):');
+                      if (reason !== null) { // null si utilisateur annule
+                        rejectProject(selectedProject.id, reason);
                       }
                     }}
                     style={{
